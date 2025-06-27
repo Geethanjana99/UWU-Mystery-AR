@@ -1,11 +1,20 @@
 // ar.js - AR scene logic for mystery object hunt
 
-// Target coordinates
+// Target coordinates - Main location
 const TARGET_LAT = 6.985161867439368;
 const TARGET_LON = 81.07362372073608;
 const THRESHOLD_METERS = 25; // Back to 25 meters for real gameplay
 
-const mysteryBox = document.getElementById('mysteryBox');
+// Multiple mystery box locations around the main target
+const MYSTERY_LOCATIONS = [
+  { id: 'mysteryBox1', lat: 6.985161867439368, lon: 81.07362372073608, color: '#FF0000' }, // Red - Main
+  { id: 'mysteryBox2', lat: 6.985261867439368, lon: 81.07372372073608, color: '#00FF00' }, // Green - North-East
+  { id: 'mysteryBox3', lat: 6.985061867439368, lon: 81.07352372073608, color: '#0000FF' }, // Blue - South-West  
+  { id: 'mysteryBox4', lat: 6.985261867439368, lon: 81.07352372073608, color: '#FFFF00' }, // Yellow - North-West
+  { id: 'mysteryBox5', lat: 6.985061867439368, lon: 81.07372372073608, color: '#FF00FF' }  // Magenta - South-East
+];
+
+const mysteryBoxes = MYSTERY_LOCATIONS.map(loc => document.getElementById(loc.id)).filter(box => box);
 const testBox = document.getElementById('testBox');
 const popup = document.getElementById('popup');
 const loadingIndicator = document.getElementById('loadingIndicator');
@@ -13,6 +22,8 @@ const loadingIndicator = document.getElementById('loadingIndicator');
 let gpsEnabled = false;
 let userLocation = null;
 let debugMode = false; // Disable debug mode - only show at correct location
+let foundBoxes = new Set(); // Track found boxes
+let directionHint = null; // For direction indicator
 
 // Debug function to check camera access
 function debugCameraAccess() {
@@ -236,6 +247,7 @@ function setupGPS() {
         };
         gpsEnabled = true;
         enableGPSFeatures();
+        createDirectionHint(); // Create direction hint when GPS is available
         checkDistance();
       },
       function(error) {
@@ -292,6 +304,121 @@ function showFallbackMessage() {
     testBox.setAttribute('visible', 'true');
   }
   console.log('📦 Showing test box instead of GPS-based content');
+  
+  // Create direction hint UI
+  createDirectionHint();
+}
+
+// Create direction hint UI
+function createDirectionHint() {
+  if (directionHint) return; // Already created
+  
+  directionHint = document.createElement('div');
+  directionHint.id = 'directionHint';
+  directionHint.style.cssText = `
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 15px;
+    border-radius: 10px;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+    z-index: 1000;
+    min-width: 200px;
+  `;
+  directionHint.innerHTML = `
+    <div style="text-align: center; margin-bottom: 10px;">
+      🧭 <strong>Mystery Hunt Guide</strong>
+    </div>
+    <div id="hintContent">Getting location...</div>
+  `;
+  document.body.appendChild(directionHint);
+}
+
+// Calculate bearing (direction) from current location to target
+function calculateBearing(lat1, lon1, lat2, lon2) {
+  const toRad = deg => deg * Math.PI / 180;
+  const toDeg = rad => rad * 180 / Math.PI;
+  
+  const dLon = toRad(lon2 - lon1);
+  const lat1Rad = toRad(lat1);
+  const lat2Rad = toRad(lat2);
+  
+  const y = Math.sin(dLon) * Math.cos(lat2Rad);
+  const x = Math.cos(lat1Rad) * Math.sin(lat2Rad) - Math.sin(lat1Rad) * Math.cos(lat2Rad) * Math.cos(dLon);
+  
+  let bearing = toDeg(Math.atan2(y, x));
+  return (bearing + 360) % 360; // Normalize to 0-360
+}
+
+// Get direction emoji based on bearing
+function getDirectionEmoji(bearing) {
+  if (bearing >= 337.5 || bearing < 22.5) return '⬆️ North';
+  if (bearing >= 22.5 && bearing < 67.5) return '↗️ Northeast';
+  if (bearing >= 67.5 && bearing < 112.5) return '➡️ East';
+  if (bearing >= 112.5 && bearing < 157.5) return '↘️ Southeast';
+  if (bearing >= 157.5 && bearing < 202.5) return '⬇️ South';
+  if (bearing >= 202.5 && bearing < 247.5) return '↙️ Southwest';
+  if (bearing >= 247.5 && bearing < 292.5) return '⬅️ West';
+  if (bearing >= 292.5 && bearing < 337.5) return '↖️ Northwest';
+}
+
+// Update direction hint
+function updateDirectionHint() {
+  if (!directionHint || !userLocation) return;
+  
+  const hintContent = document.getElementById('hintContent');
+  if (!hintContent) return;
+  
+  // Find closest mystery box
+  let closestBox = null;
+  let closestDistance = Infinity;
+  
+  MYSTERY_LOCATIONS.forEach(location => {
+    if (foundBoxes.has(location.id)) return; // Skip found boxes
+    
+    const dist = getDistanceMeters(userLocation.lat, userLocation.lon, location.lat, location.lon);
+    if (dist < closestDistance) {
+      closestDistance = dist;
+      closestBox = location;
+    }
+  });
+  
+  if (closestBox) {
+    const bearing = calculateBearing(userLocation.lat, userLocation.lon, closestBox.lat, closestBox.lon);
+    const direction = getDirectionEmoji(bearing);
+    
+    hintContent.innerHTML = `
+      <div style="margin-bottom: 5px;">
+        <strong>Closest Box:</strong> <span style="color: ${closestBox.color};">●</span> ${closestBox.id}
+      </div>
+      <div style="margin-bottom: 5px;">
+        📍 <strong>${closestDistance.toFixed(1)}m</strong> away
+      </div>
+      <div style="margin-bottom: 5px;">
+        🧭 <strong>${direction}</strong>
+      </div>
+      <div style="font-size: 12px; opacity: 0.8;">
+        Found: ${foundBoxes.size}/5 boxes
+      </div>
+    `;
+    
+    // Show distance warning
+    if (closestDistance > THRESHOLD_METERS) {
+      hintContent.innerHTML += `<div style="color: #ffaa00; font-size: 12px; margin-top: 5px;">Get within ${THRESHOLD_METERS}m to see the box!</div>`;
+    } else {
+      hintContent.innerHTML += `<div style="color: #00ff00; font-size: 12px; margin-top: 5px;">✅ Box should be visible! Look around!</div>`;
+    }
+  } else {
+    hintContent.innerHTML = `
+      <div style="color: #00ff00;">
+        🎉 All boxes found!<br>
+        Congratulations!
+      </div>
+    `;
+  }
 }
 
 function checkDistance() {
@@ -300,23 +427,31 @@ function checkDistance() {
     return;
   }
   
-  const dist = getDistanceMeters(userLocation.lat, userLocation.lon, TARGET_LAT, TARGET_LON);
   console.log(`📍 Current location: ${userLocation.lat.toFixed(6)}, ${userLocation.lon.toFixed(6)}`);
-  console.log(`📍 Target location: ${TARGET_LAT}, ${TARGET_LON}`);
-  console.log(`📍 Distance to target: ${dist.toFixed(1)}m (threshold: ${THRESHOLD_METERS}m)`);
   
-  if (dist < THRESHOLD_METERS) {
-    if (mysteryBox) {
-      mysteryBox.setAttribute('visible', 'true');
-      console.log('🎯 You are close enough! Mystery box is now visible!');
-      console.log(`📍 You are ${dist.toFixed(1)}m away from the target location.`);
+  // Check each mystery box location
+  MYSTERY_LOCATIONS.forEach((location, index) => {
+    if (foundBoxes.has(location.id)) return; // Skip already found boxes
+    
+    const dist = getDistanceMeters(userLocation.lat, userLocation.lon, location.lat, location.lon);
+    const boxElement = document.getElementById(location.id);
+    
+    console.log(`📍 ${location.id} distance: ${dist.toFixed(1)}m (threshold: ${THRESHOLD_METERS}m)`);
+    
+    if (dist < THRESHOLD_METERS) {
+      if (boxElement) {
+        boxElement.setAttribute('visible', 'true');
+        console.log(`🎯 ${location.id} is now visible! Distance: ${dist.toFixed(1)}m`);
+      }
+    } else {
+      if (boxElement) {
+        boxElement.setAttribute('visible', 'false');
+      }
     }
-  } else {
-    if (mysteryBox) {
-      mysteryBox.setAttribute('visible', 'false');
-      console.log(`❌ Too far away. You need to be within ${THRESHOLD_METERS}m. Current distance: ${dist.toFixed(1)}m`);
-    }
-  }
+  });
+  
+  // Update direction hint
+  updateDirectionHint();
 }
 
 // Helper: Haversine formula for distance between two lat/lon points
@@ -342,31 +477,53 @@ window.addEventListener('gps-camera-update-position', function(e) {
 });
 
 // Handle tap/click on the AR objects
-if (mysteryBox) {
-  mysteryBox.addEventListener('click', function () {
-    console.log('🎉 Mystery box clicked!');
-    mysteryBox.setAttribute('visible', 'false');
-    if (popup) {
-      popup.classList.remove('hidden');
-      setTimeout(() => popup.classList.add('hidden'), 3500);
-    }
-    
-    // Show success message with distance
-    if (userLocation) {
-      const dist = getDistanceMeters(userLocation.lat, userLocation.lon, TARGET_LAT, TARGET_LON);
-      alert(`🎉 Congratulations! You found the hidden object!\n📍 You were ${dist.toFixed(1)}m away from the target location.`);
-    } else {
-      alert('🎉 You found the hidden object!');
-    }
-  });
-}
+MYSTERY_LOCATIONS.forEach((location) => {
+  const boxElement = document.getElementById(location.id);
+  if (boxElement) {
+    boxElement.addEventListener('click', function () {
+      console.log(`🎉 ${location.id} clicked!`);
+      boxElement.setAttribute('visible', 'false');
+      foundBoxes.add(location.id);
+      
+      if (popup) {
+        popup.classList.remove('hidden');
+        setTimeout(() => popup.classList.add('hidden'), 3500);
+      }
+      
+      // Show success message with distance
+      if (userLocation) {
+        const dist = getDistanceMeters(userLocation.lat, userLocation.lon, location.lat, location.lon);
+        const remaining = MYSTERY_LOCATIONS.length - foundBoxes.size;
+        
+        if (remaining > 0) {
+          alert(`🎉 Great! You found ${location.id}!\n📍 You were ${dist.toFixed(1)}m away.\n🎯 ${remaining} more boxes to find!`);
+        } else {
+          alert(`🎉 CONGRATULATIONS! You found ALL mystery boxes!\n📍 Final box was ${dist.toFixed(1)}m away.\n🏆 Quest Complete!`);
+        }
+      } else {
+        alert(`🎉 You found ${location.id}!`);
+      }
+      
+      // Update direction hint after finding a box
+      updateDirectionHint();
+    });
+  }
+});
 
 if (testBox) {
   testBox.addEventListener('click', function () {
     console.log('📦 Test box clicked!');
     if (userLocation) {
-      const dist = getDistanceMeters(userLocation.lat, userLocation.lon, TARGET_LAT, TARGET_LON);
-      alert(`📦 Test box clicked! Camera is working.\n📍 Current distance to mystery location: ${dist.toFixed(1)}m\n🎯 You need to be within ${THRESHOLD_METERS}m to find the mystery object.`);
+      // Find closest mystery box for reference
+      let closestDistance = Infinity;
+      MYSTERY_LOCATIONS.forEach(location => {
+        if (!foundBoxes.has(location.id)) {
+          const dist = getDistanceMeters(userLocation.lat, userLocation.lon, location.lat, location.lon);
+          if (dist < closestDistance) closestDistance = dist;
+        }
+      });
+      
+      alert(`📦 Test box clicked! Camera is working.\n📍 Closest mystery box: ${closestDistance.toFixed(1)}m away\n🎯 You need to be within ${THRESHOLD_METERS}m to find mystery objects.\n📊 Found: ${foundBoxes.size}/${MYSTERY_LOCATIONS.length} boxes`);
     } else {
       alert('📦 Test box clicked! Camera is working.\n📍 Getting your location...');
     }

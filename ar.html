@@ -34,14 +34,45 @@
       animation="property: rotation; to: 0 360 0; loop: true; dur: 4000">
     </a-box>
     
-    <!-- Mystery box with GPS (initially hidden) -->
-    <a-box id="mysteryBox"
+    <!-- Mystery boxes around the area (initially hidden) -->
+    <a-box id="mysteryBox1"
       gps-entity-place="latitude: 6.985161867439368; longitude: 81.07362372073608"
       color="#FF0000"
       depth="1" height="1" width="1"
       animation="property: rotation; to: 0 360 0; loop: true; dur: 4000"
-      visible="false"
-      event-set__click="_event: click; visible: false">
+      visible="false">
+    </a-box>
+    
+    <a-box id="mysteryBox2"
+      gps-entity-place="latitude: 6.985261867439368; longitude: 81.07372372073608"
+      color="#00FF00"
+      depth="1" height="1" width="1"
+      animation="property: rotation; to: 0 360 0; loop: true; dur: 4000"
+      visible="false">
+    </a-box>
+    
+    <a-box id="mysteryBox3"
+      gps-entity-place="latitude: 6.985061867439368; longitude: 81.07352372073608"
+      color="#0000FF"
+      depth="1" height="1" width="1"
+      animation="property: rotation; to: 0 360 0; loop: true; dur: 4000"
+      visible="false">
+    </a-box>
+    
+    <a-box id="mysteryBox4"
+      gps-entity-place="latitude: 6.985261867439368; longitude: 81.07352372073608"
+      color="#FFFF00"
+      depth="1" height="1" width="1"
+      animation="property: rotation; to: 0 360 0; loop: true; dur: 4000"
+      visible="false">
+    </a-box>
+    
+    <a-box id="mysteryBox5"
+      gps-entity-place="latitude: 6.985061867439368; longitude: 81.07372372073608"
+      color="#FF00FF"
+      depth="1" height="1" width="1"
+      animation="property: rotation; to: 0 360 0; loop: true; dur: 4000"
+      visible="false">
     </a-box>
     
     <!-- Text instructions -->
@@ -55,7 +86,7 @@
     
     <!-- Location instructions -->
     <a-text 
-      value="Find the secret location to see the mystery object!" 
+      value="Find 5 mystery boxes around this area!" 
       position="0 1 -5" 
       color="#ffff00"
       align="center"
