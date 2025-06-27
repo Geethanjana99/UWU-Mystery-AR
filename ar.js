@@ -3,7 +3,7 @@
 // Target coordinates - Main location
 const TARGET_LAT = 6.985161867439368;
 const TARGET_LON = 81.07362372073608;
-const THRESHOLD_METERS = 25; // Show mystery boxes when within 50 meters
+const THRESHOLD_METERS = 5; // Show mystery boxes when within 50 meters
 
 // Multiple mystery box locations around the main target
 const MYSTERY_LOCATIONS = [
