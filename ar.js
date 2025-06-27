@@ -26,7 +26,7 @@ let foundBoxes = new Set(); // Track found boxes
 let directionHint = null; // For direction indicator
 let testMode = false; // Set to true to show test box instead of mystery boxes
 
-// Debug function to check camera support (without interfering with AR.js)
+// Debug function to check camera support (simplified)
 function debugCameraAccess() {
   console.log('🔍 Checking camera support...');
   console.log('User Agent:', navigator.userAgent);
@@ -39,61 +39,52 @@ function debugCameraAccess() {
     return;
   }
 
-  console.log('✅ Camera API is available - AR.js will handle camera initialization');
+  console.log('✅ Camera API is available - waiting for AR.js initialization');
   
-  // Let AR.js handle camera setup without interference
-  initializeARCamera();
+  // Just wait for AR.js to initialize naturally
+  setTimeout(() => {
+    checkCameraStatus();
+  }, 2000);
 }
 
-// Force AR.js camera initialization (simplified)
-function initializeARCamera() {
-  console.log('🎥 Initializing AR.js camera system...');
+// Check camera status without forcing anything
+function checkCameraStatus() {
+  console.log('� Checking camera status...');
   
-  const scene = document.querySelector('a-scene');
-  if (scene) {
-    console.log('📡 AR scene found, letting AR.js handle camera initialization');
-    // AR.js will handle camera automatically
+  const videos = document.querySelectorAll('video');
+  const canvases = document.querySelectorAll('canvas');
+  
+  console.log(`Found ${videos.length} video elements and ${canvases.length} canvas elements`);
+  
+  if (videos.length > 0) {
+    videos.forEach((video, index) => {
+      console.log(`Video ${index}:`, {
+        srcObject: !!video.srcObject,
+        readyState: video.readyState,
+        videoWidth: video.videoWidth,
+        videoHeight: video.videoHeight,
+        paused: video.paused
+      });
+    });
+    console.log('✅ Camera elements found - AR should be working');
+    hideLoadingIndicator();
   } else {
-    console.error('❌ AR scene not found');
+    console.log('⚠️ No video elements yet - waiting for AR.js...');
+    // Try again in a moment
+    setTimeout(checkCameraStatus, 2000);
   }
-  
-  // Check video element status after AR.js initializes
-  setTimeout(checkVideoElement, 3000);
+}
+
+function hideLoadingIndicator() {
+  if (loadingIndicator) {
+    loadingIndicator.style.opacity = '0';
+    setTimeout(() => {
+      loadingIndicator.style.display = 'none';
+    }, 500);
+  }
 }
 
 // Check if video element exists and is displaying
-function checkVideoElement() {
-  const videos = document.querySelectorAll('video');
-  console.log('🎬 Found video elements:', videos.length);
-  
-  videos.forEach((video, index) => {
-    console.log(`Video ${index}:`, {
-      src: video.src,
-      srcObject: !!video.srcObject,
-      readyState: video.readyState,
-      videoWidth: video.videoWidth,
-      videoHeight: video.videoHeight,
-      visible: video.style.display !== 'none'
-    });
-    
-    // Ensure video is visible
-    video.style.display = 'block';
-    video.style.visibility = 'visible';
-    video.style.opacity = '1';
-    
-    if (video.paused) {
-      video.play().catch(e => console.log('Video play attempt:', e.message));
-    }
-  });
-  
-  if (videos.length === 0) {
-    console.log('❌ No video elements found - camera background may be missing');
-    showCameraInfo();
-  } else {
-    console.log('✅ Video elements found - camera should be working');
-  }
-}
-
 function showCameraInfo() {
   if (loadingIndicator) {
     loadingIndicator.innerHTML = `
@@ -118,51 +109,37 @@ function showError(message) {
   }
 }
 
-// Initialize AR scene and camera
+// Initialize AR scene and camera (simplified)
 function initializeAR() {
   console.log('🚀 Initializing AR scene...');
   
   const scene = document.querySelector('a-scene');
   
   if (scene) {
-    let renderStarted = false;
-    
     scene.addEventListener('renderstart', function() {
-      if (!renderStarted) {
-        renderStarted = true;
-        console.log('📷 AR scene render started - camera should be active');
-        
-        // Check for video after render starts
-        setTimeout(checkVideoElement, 1500);
-        
-        // Hide loading indicator when camera starts rendering
-        setTimeout(() => {
-          if (loadingIndicator) {
-            loadingIndicator.style.display = 'none';
-          }
-        }, 3000);
-      }
+      console.log('📷 AR scene render started');
+      setTimeout(hideLoadingIndicator, 2000);
     });
     
     scene.addEventListener('loaded', function() {
       console.log('✅ AR scene loaded successfully');
+      hideLoadingIndicator();
     });
     
-    // Listen for AR.js specific events
+    // Listen for AR.js video events
     scene.addEventListener('arjs-video-loaded', function() {
       console.log('📹 AR.js video loaded successfully');
-      if (loadingIndicator) {
-        loadingIndicator.style.display = 'none';
-      }
+      hideLoadingIndicator();
     });
     
-    // Fallback: hide loading indicator after reasonable time
+    // Force hide loading after timeout
     setTimeout(() => {
-      console.log('⏰ Initialization timeout reached');
-      if (loadingIndicator) {
-        loadingIndicator.style.display = 'none';
-      }
-    }, 8000);
+      console.log('⏰ Timeout reached - hiding loading indicator');
+      hideLoadingIndicator();
+    }, 10000);
+  } else {
+    console.error('❌ AR scene not found!');
+    showError('AR scene initialization failed. Please refresh the page.');
   }
 }
 
@@ -612,15 +589,58 @@ function hideAllBoxes() {
   console.log('💡 Use showAllBoxes() to show them again');
 }
 
+// Emergency camera restart function
+function forceRestartCamera() {
+  console.log('🔄 Force restarting camera...');
+  
+  // Show loading indicator
+  if (loadingIndicator) {
+    loadingIndicator.style.display = 'block';
+    loadingIndicator.style.opacity = '1';
+    loadingIndicator.innerHTML = `
+      <div class="spinner"></div>
+      <p>Restarting AR Camera...</p>
+      <p class="loading-hint">Please wait...</p>
+    `;
+  }
+  
+  // Try to restart the scene
+  const scene = document.querySelector('a-scene');
+  if (scene) {
+    console.log('🔄 Attempting to restart AR scene...');
+    
+    // Remove and re-add the scene to force restart
+    const parent = scene.parentNode;
+    const nextSibling = scene.nextSibling;
+    parent.removeChild(scene);
+    
+    setTimeout(() => {
+      parent.insertBefore(scene, nextSibling);
+      console.log('✅ Scene reinserted - AR.js should reinitialize');
+      
+      setTimeout(() => {
+        checkCameraStatus();
+      }, 3000);
+    }, 1000);
+  }
+  
+  showNotification('🔄 Restarting camera... Please wait...', 3000, '#ffc107');
+}
+
 // Make functions available globally for console access
 window.enableTestMode = enableTestMode;
 window.disableTestMode = disableTestMode;
 window.showAllBoxes = showAllBoxes;
 window.hideAllBoxes = hideAllBoxes;
+window.forceRestartCamera = forceRestartCamera;
 
 // On load, hide popup and initialize
 window.onload = () => {
-  popup.classList.add('hidden');
+  console.log('🎮 UWU Mystery AR Hunt loading...');
+  
+  if (popup) {
+    popup.classList.add('hidden');
+  }
   
   // Console help message
   console.log('🎮 UWU Mystery AR Hunt loaded!');
@@ -629,11 +649,15 @@ window.onload = () => {
   console.log('   disableTestMode() - Hide test box, enable normal game mode');
   console.log('   showAllBoxes() - Show all mystery boxes regardless of distance');
   console.log('   hideAllBoxes() - Hide all mystery boxes');
+  console.log('   forceRestartCamera() - Emergency camera restart if stuck');
   console.log('🗺️ Normal mode: Mystery boxes appear when within ' + THRESHOLD_METERS + 'm of target locations');
   
+  // Start camera check immediately
   debugCameraAccess();
+  
+  // Initialize AR without delay
   initializeAR();
   
-  // Start GPS setup after a delay
-  setTimeout(setupGPS, 3000);
+  // Start GPS setup after a short delay
+  setTimeout(setupGPS, 2000);
 };

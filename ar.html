@@ -14,10 +14,11 @@
 <body>
   <a-scene
     vr-mode-ui="enabled: false"
-    arjs="sourceType: webcam; videoTexture: true; debugUIEnabled: true;"
+    arjs="sourceType: webcam; videoTexture: true; debugUIEnabled: false;"
     renderer="antialias: true; alpha: true; precision: mediump;"
     embedded
-    class="ar-scene">
+    class="ar-scene"
+    loading-screen="enabled: false">
     
     <!-- Camera setup for AR -->
     <a-camera 
