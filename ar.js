@@ -3,7 +3,7 @@
 // Target coordinates - Main location
 const TARGET_LAT = 6.985161867439368;
 const TARGET_LON = 81.07362372073608;
-const THRESHOLD_METERS = 15; // Show mystery boxes when within 15 meters
+const THRESHOLD_METERS = 5; // Show mystery boxes when within 5 meters
 
 // Multiple mystery box locations spread around different areas (100m x 100m range)
 const MYSTERY_LOCATIONS = [
@@ -26,9 +26,9 @@ let foundBoxes = new Set(); // Track found boxes
 let directionHint = null; // For direction indicator
 let testMode = false; // Set to true to show test box instead of mystery boxes
 
-// Debug function to check camera access
+// Debug function to check camera support (without interfering with AR.js)
 function debugCameraAccess() {
-  console.log('🔍 Checking camera access...');
+  console.log('🔍 Checking camera support...');
   console.log('User Agent:', navigator.userAgent);
   console.log('Is mobile:', /Mobi|Android/i.test(navigator.userAgent));
   console.log('Protocol:', window.location.protocol);
@@ -39,53 +39,26 @@ function debugCameraAccess() {
     return;
   }
 
-  navigator.mediaDevices.getUserMedia({ 
-    video: { 
-      facingMode: 'environment',
-      width: { ideal: 1280, max: 1920 },
-      height: { ideal: 720, max: 1080 }
-    } 
-  })
-    .then(function(stream) {
-      console.log('✅ Camera access granted');
-      console.log('Camera settings:', stream.getVideoTracks()[0].getSettings());
-      
-      // Don't stop the stream immediately, let it run for a moment
-      setTimeout(() => {
-        stream.getTracks().forEach(track => track.stop());
-        console.log('🔄 Test stream stopped, AR.js should take over');
-      }, 1000);
-      
-      // Force AR.js to initialize camera
-      initializeARCamera();
-      
-    })
-    .catch(function(err) {
-      console.error('❌ Camera access denied:', err);
-      showError('Camera access required. Please allow camera permissions and refresh the page.');
-    });
+  console.log('✅ Camera API is available - AR.js will handle camera initialization');
+  
+  // Let AR.js handle camera setup without interference
+  initializeARCamera();
 }
 
-// Force AR.js camera initialization
+// Force AR.js camera initialization (simplified)
 function initializeARCamera() {
-  console.log('🎥 Forcing AR.js camera initialization...');
+  console.log('🎥 Initializing AR.js camera system...');
   
-  // Try to trigger AR.js camera setup
   const scene = document.querySelector('a-scene');
-  if (scene && scene.systems && scene.systems.arjs) {
-    console.log('📡 AR.js system found, attempting to start camera');
-    try {
-      // Force AR.js to start
-      if (scene.systems.arjs.start) {
-        scene.systems.arjs.start();
-      }
-    } catch (e) {
-      console.log('⚠️ Could not force start AR.js:', e.message);
-    }
+  if (scene) {
+    console.log('📡 AR scene found, letting AR.js handle camera initialization');
+    // AR.js will handle camera automatically
+  } else {
+    console.error('❌ AR scene not found');
   }
   
-  // Alternative: manually create video element if needed
-  setTimeout(checkVideoElement, 2000);
+  // Check video element status after AR.js initializes
+  setTimeout(checkVideoElement, 3000);
 }
 
 // Check if video element exists and is displaying
@@ -100,31 +73,38 @@ function checkVideoElement() {
       readyState: video.readyState,
       videoWidth: video.videoWidth,
       videoHeight: video.videoHeight,
-      style: video.style.cssText
+      visible: video.style.display !== 'none'
     });
     
-    // Ensure video is visible and playing
+    // Ensure video is visible
     video.style.display = 'block';
     video.style.visibility = 'visible';
     video.style.opacity = '1';
-    video.play().catch(e => console.log('Video play error:', e));
+    
+    if (video.paused) {
+      video.play().catch(e => console.log('Video play attempt:', e.message));
+    }
   });
   
   if (videos.length === 0) {
-    console.log('❌ No video elements found - camera background missing');
-    showCameraError();
+    console.log('❌ No video elements found - camera background may be missing');
+    showCameraInfo();
+  } else {
+    console.log('✅ Video elements found - camera should be working');
   }
 }
 
-function showCameraError() {
+function showCameraInfo() {
   if (loadingIndicator) {
     loadingIndicator.innerHTML = `
-      <div style="color: #ff6b6b;">📹 Camera background not visible</div>
-      <div style="font-size: 14px; margin-top: 10px;">
-        AR objects are working but camera view is missing.<br>
-        This might be a browser compatibility issue.
+      <div class="spinner"></div>
+      <div>AR Camera Initializing...</div>
+      <div style="font-size: 14px; margin-top: 10px; opacity: 0.8;">
+        Camera may take a moment to appear.<br>
+        AR objects should still be visible.<br>
+        <span style="color: #ffc107;">Try moving your device or refreshing if needed.</span>
       </div>
-      <button onclick="location.reload()" style="margin-top: 10px; padding: 8px 16px; background: #2b7a78; color: white; border: none; border-radius: 4px;">Retry</button>
+      <button onclick="location.reload()" style="margin-top: 15px; padding: 8px 16px; background: #2b7a78; color: white; border: none; border-radius: 4px;">Refresh</button>
     `;
   }
 }
@@ -146,7 +126,6 @@ function initializeAR() {
   
   if (scene) {
     let renderStarted = false;
-    let cameraVisible = false;
     
     scene.addEventListener('renderstart', function() {
       if (!renderStarted) {
@@ -154,14 +133,14 @@ function initializeAR() {
         console.log('📷 AR scene render started - camera should be active');
         
         // Check for video after render starts
-        setTimeout(checkVideoElement, 1000);
+        setTimeout(checkVideoElement, 1500);
         
         // Hide loading indicator when camera starts rendering
         setTimeout(() => {
           if (loadingIndicator) {
             loadingIndicator.style.display = 'none';
           }
-        }, 2000);
+        }, 3000);
       }
     });
     
@@ -171,69 +150,23 @@ function initializeAR() {
     
     // Listen for AR.js specific events
     scene.addEventListener('arjs-video-loaded', function() {
-      console.log('📹 AR.js video loaded');
-      cameraVisible = true;
-    });
-    
-    // Ensure loading indicator is hidden after reasonable time
-    setTimeout(() => {
-      console.log('⏰ Timeout reached, checking camera status');
+      console.log('📹 AR.js video loaded successfully');
       if (loadingIndicator) {
         loadingIndicator.style.display = 'none';
       }
-      
-      // If no video is visible, try manual camera setup
-      if (!cameraVisible) {
-        console.log('🔧 Camera background not visible, trying manual setup');
-        tryManualCameraSetup();
+    });
+    
+    // Fallback: hide loading indicator after reasonable time
+    setTimeout(() => {
+      console.log('⏰ Initialization timeout reached');
+      if (loadingIndicator) {
+        loadingIndicator.style.display = 'none';
       }
-    }, 6000);
+    }, 8000);
   }
 }
 
 // Try to manually create camera background if AR.js fails
-function tryManualCameraSetup() {
-  console.log('🛠️ Attempting manual camera setup...');
-  
-  navigator.mediaDevices.getUserMedia({ 
-    video: { 
-      facingMode: 'environment',
-      width: { ideal: 1280 },
-      height: { ideal: 720 }
-    } 
-  })
-  .then(function(stream) {
-    console.log('� Manual camera stream obtained');
-    
-    // Create video element for background
-    let video = document.createElement('video');
-    video.srcObject = stream;
-    video.autoplay = true;
-    video.playsInline = true;
-    video.muted = true;
-    video.style.cssText = `
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      z-index: -1;
-    `;
-    
-    document.body.insertBefore(video, document.body.firstChild);
-    
-    video.onloadedmetadata = function() {
-      console.log('✅ Manual video background is now visible');
-      video.play();
-    };
-  })
-  .catch(function(err) {
-    console.error('❌ Manual camera setup failed:', err);
-    showCameraError();
-  });
-}
-
 // Setup GPS tracking (separate from camera)
 function setupGPS() {
   console.log('🌍 Setting up GPS tracking...');
@@ -535,18 +468,23 @@ MYSTERY_LOCATIONS.forEach((location) => {
         setTimeout(() => popup.classList.add('hidden'), 3500);
       }
       
-      // Show success message with distance
+      // Show success notification
       if (userLocation) {
         const dist = getDistanceMeters(userLocation.lat, userLocation.lon, location.lat, location.lon);
         const remaining = MYSTERY_LOCATIONS.length - foundBoxes.size;
         
         if (remaining > 0) {
-          alert(`🎉 Great! You found ${location.id}!\n📍 You were ${dist.toFixed(1)}m away.\n🎯 ${remaining} more boxes to find!`);
+          showNotification(`🎉 Found ${location.id}! 📍 ${dist.toFixed(1)}m away<br>🎯 ${remaining} more to find!`, 4000, '#00ff00');
         } else {
-          alert(`🎉 CONGRATULATIONS! You found ALL mystery boxes!\n📍 Final box was ${dist.toFixed(1)}m away.\n🏆 Quest Complete!`);
+          showNotification(`🎉 QUEST COMPLETE! All boxes found!<br>🏆 Final box: ${dist.toFixed(1)}m away`, 5000, '#ffc107');
         }
       } else {
-        alert(`🎉 You found ${location.id}!`);
+        const remaining = MYSTERY_LOCATIONS.length - foundBoxes.size;
+        if (remaining > 0) {
+          showNotification(`🎉 Found ${location.id}!<br>🎯 ${remaining} more to find!`, 4000, '#00ff00');
+        } else {
+          showNotification(`🎉 QUEST COMPLETE!<br>🏆 All mystery boxes found!`, 5000, '#ffc107');
+        }
       }
       
       // Update direction hint after finding a box
@@ -568,58 +506,117 @@ if (testBox) {
         }
       });
       
-      alert(`📦 Test box clicked! Camera is working.\n📍 Closest mystery box: ${closestDistance.toFixed(1)}m away\n🎯 You need to be within ${THRESHOLD_METERS}m to find mystery objects.\n📊 Found: ${foundBoxes.size}/${MYSTERY_LOCATIONS.length} boxes`);
+      showNotification(`📦 Test box clicked! Camera working ✅<br>📍 Closest box: ${closestDistance.toFixed(1)}m<br>🎯 Within ${THRESHOLD_METERS}m to find objects<br>📊 Found: ${foundBoxes.size}/${MYSTERY_LOCATIONS.length}`, 5000, '#ffc107');
     } else {
-      alert('📦 Test box clicked! Camera is working.\n📍 Getting your location...');
+      showNotification(`📦 Test box clicked! Camera working ✅<br>📍 Getting your location...`, 3000, '#ffc107');
     }
   });
 }
 
-// Test mode functions for debugging
-function enableTestMode() {
-  testMode = true;
-  debugMode = true;
-  console.log('🧪 TEST MODE ENABLED - Test box will be visible for AR debugging');
+// Notification system for user feedback
+function createNotificationElement() {
+  if (document.getElementById('notification')) return; // Already exists
   
+  const notification = document.createElement('div');
+  notification.id = 'notification';
+  notification.style.cssText = `
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.9), rgba(20, 20, 50, 0.9));
+    color: white;
+    padding: 15px 25px;
+    border-radius: 10px;
+    font-family: Arial, sans-serif;
+    font-size: 16px;
+    z-index: 1001;
+    display: none;
+    border: 2px solid #ffc107;
+    box-shadow: 0 0 20px rgba(255, 193, 7, 0.5);
+    max-width: 90%;
+    text-align: center;
+  `;
+  document.body.appendChild(notification);
+}
+
+function showNotification(message, duration = 3000, color = '#ffc107') {
+  createNotificationElement();
+  const notification = document.getElementById('notification');
+  
+  notification.innerHTML = message;
+  notification.style.borderColor = color;
+  notification.style.boxShadow = `0 0 20px ${color}50`;
+  notification.style.display = 'block';
+  notification.style.animation = 'notificationSlideIn 0.5s ease-out';
+  
+  setTimeout(() => {
+    notification.style.animation = 'notificationSlideOut 0.5s ease-in';
+    setTimeout(() => {
+      notification.style.display = 'none';
+    }, 500);
+  }, duration);
+}
+
+// Add notification animations to CSS
+const notificationStyles = document.createElement('style');
+notificationStyles.textContent = `
+  @keyframes notificationSlideIn {
+    from { transform: translateX(-50%) translateY(-100%); opacity: 0; }
+    to { transform: translateX(-50%) translateY(0); opacity: 1; }
+  }
+  @keyframes notificationSlideOut {
+    from { transform: translateX(-50%) translateY(0); opacity: 1; }
+    to { transform: translateX(-50%) translateY(-100%); opacity: 0; }
+  }
+`;
+document.head.appendChild(notificationStyles);
+
+// Debug functions for showing/hiding all boxes
+function showAllBoxes() {
+  console.log('🔧 DEBUG: Showing all mystery boxes regardless of distance');
+  MYSTERY_LOCATIONS.forEach((location) => {
+    const boxElement = document.getElementById(location.id);
+    if (boxElement && !foundBoxes.has(location.id)) {
+      boxElement.setAttribute('visible', 'true');
+      // Add entrance animation
+      boxElement.setAttribute('animation__debug_appear', 'property: scale; from: 0 0 0; to: 1 1 1; dur: 1000; easing: easeOutBounce');
+      setTimeout(() => {
+        boxElement.removeAttribute('animation__debug_appear');
+      }, 1000);
+    }
+  });
+  
+  // Hide test box in debug mode
   if (testBox) {
-    testBox.setAttribute('visible', 'true');
-    console.log('📦 Test box is now visible');
+    testBox.setAttribute('visible', 'false');
   }
   
-  // Hide mystery boxes in test mode
+  console.log('💡 Use hideAllBoxes() to hide them again');
+}
+
+function hideAllBoxes() {
+  console.log('🔧 DEBUG: Hiding all mystery boxes');
   MYSTERY_LOCATIONS.forEach((location) => {
     const boxElement = document.getElementById(location.id);
     if (boxElement) {
-      boxElement.setAttribute('visible', 'false');
+      // Add exit animation
+      boxElement.setAttribute('animation__debug_disappear', 'property: scale; from: 1 1 1; to: 0 0 0; dur: 500; easing: easeInQuad');
+      setTimeout(() => {
+        boxElement.setAttribute('visible', 'false');
+        boxElement.removeAttribute('animation__debug_disappear');
+      }, 500);
     }
   });
   
-  console.log('🎮 Mystery boxes hidden in test mode');
-  console.log('💡 Use disableTestMode() to return to game mode');
-}
-
-function disableTestMode() {
-  testMode = false;
-  debugMode = false;
-  console.log('🎮 GAME MODE ENABLED - Test box hidden, mystery boxes will show based on GPS');
-  
-  if (testBox) {
-    testBox.setAttribute('visible', 'false');
-    console.log('📦 Test box is now hidden');
-  }
-  
-  // Re-check distances for mystery boxes
-  if (gpsEnabled) {
-    checkDistance();
-  }
-  
-  console.log('🗺️ Mystery boxes will show when within range');
-  console.log('💡 Use enableTestMode() to test AR functionality');
+  console.log('💡 Use showAllBoxes() to show them again');
 }
 
 // Make functions available globally for console access
 window.enableTestMode = enableTestMode;
 window.disableTestMode = disableTestMode;
+window.showAllBoxes = showAllBoxes;
+window.hideAllBoxes = hideAllBoxes;
 
 // On load, hide popup and initialize
 window.onload = () => {
@@ -630,6 +627,8 @@ window.onload = () => {
   console.log('💡 Debug commands available:');
   console.log('   enableTestMode() - Show yellow test box for AR testing');
   console.log('   disableTestMode() - Hide test box, enable normal game mode');
+  console.log('   showAllBoxes() - Show all mystery boxes regardless of distance');
+  console.log('   hideAllBoxes() - Hide all mystery boxes');
   console.log('🗺️ Normal mode: Mystery boxes appear when within ' + THRESHOLD_METERS + 'm of target locations');
   
   debugCameraAccess();
