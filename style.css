@@ -24,6 +24,17 @@ body, html {
   width: 100% !important;
   height: 100% !important;
   object-fit: cover;
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  z-index: 0 !important;
+}
+
+/* Prevent the scene from being hidden */
+.ar-scene {
+  opacity: 1 !important;
+  visibility: visible !important;
+  background: transparent !important;
 }
 .container {
   max-width: 400px;
@@ -92,6 +103,12 @@ button#startBtn:hover {
   border-radius: 10px;
   text-align: center;
   z-index: 1001;
+}
+
+.loading-hint {
+  font-size: 12px;
+  margin-top: 10px;
+  opacity: 0.8;
 }
 
 .spinner {

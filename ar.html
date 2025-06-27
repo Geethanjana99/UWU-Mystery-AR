@@ -19,25 +19,48 @@
     embedded
     class="ar-scene">
     
-    <!-- Camera with GPS -->
+    <!-- Camera without GPS for now -->
     <a-camera 
-      gps-camera 
-      rotation-reader>
+      look-controls="enabled: false"
+      wasd-controls="enabled: false">
     </a-camera>
+    
+    <!-- Simple visible box for testing -->
+    <a-box id="testBox"
+      position="0 0 -5"
+      color="#FFC107"
+      depth="1" height="1" width="1"
+      animation="property: rotation; to: 0 360 0; loop: true; dur: 4000">
+    </a-box>
+    
+    <!-- Mystery box with GPS (initially hidden) -->
     <a-box id="mysteryBox"
       gps-entity-place="latitude: 6.985462148939262; longitude: 81.0734485580701"
-      color="#FFC107"
+      color="#FF0000"
       depth="1" height="1" width="1"
       animation="property: rotation; to: 0 360 0; loop: true; dur: 4000"
       visible="false"
-      event-set__click="_event: click; visible: false"
-      ></a-box>
+      event-set__click="_event: click; visible: false">
+    </a-box>
+    
+    <!-- Text instructions -->
+    <a-text 
+      value="Camera Active! Look around to test AR" 
+      position="0 2 -5" 
+      color="#ffffff"
+      align="center"
+      font="dejavu">
+    </a-text>
   </a-scene>
   
   <!-- Loading indicator -->
   <div id="loadingIndicator" class="loading-indicator">
     <div class="spinner"></div>
-    <p>Initializing AR camera...</p>
+    <p>Starting AR Camera...</p>
+    <p class="loading-hint">
+      Allow camera permissions<br>
+      Keep device steady
+    </p>
   </div>
   
   <div id="popup" class="popup hidden">🎉 You found the hidden object!</div>
