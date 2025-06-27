@@ -26,9 +26,9 @@ let foundBoxes = new Set(); // Track found boxes
 let directionHint = null; // For direction indicator
 let testMode = false; // Set to true to show test box instead of mystery boxes
 
-// Debug function to check camera access
-function debugCameraAccess() {
-  console.log('🔍 Checking camera access...');
+// Check camera status (non-intrusive)
+function checkCameraStatus() {
+  console.log('🔍 Checking camera status...');
   console.log('User Agent:', navigator.userAgent);
   console.log('Is mobile:', /Mobi|Android/i.test(navigator.userAgent));
   console.log('Protocol:', window.location.protocol);
@@ -38,91 +38,18 @@ function debugCameraAccess() {
     showError('Your browser does not support camera access. Please use a modern browser.');
     return;
   }
-
-  navigator.mediaDevices.getUserMedia({ 
-    video: { 
-      facingMode: 'environment',
-      width: { ideal: 1280, max: 1920 },
-      height: { ideal: 720, max: 1080 }
-    } 
-  })
-    .then(function(stream) {
-      console.log('✅ Camera access granted');
-      console.log('Camera settings:', stream.getVideoTracks()[0].getSettings());
-      
-      // Don't stop the stream immediately, let it run for a moment
-      setTimeout(() => {
-        stream.getTracks().forEach(track => track.stop());
-        console.log('🔄 Test stream stopped, AR.js should take over');
-      }, 1000);
-      
-      // Force AR.js to initialize camera
-      initializeARCamera();
-      
-    })
-    .catch(function(err) {
-      console.error('❌ Camera access denied:', err);
-      showError('Camera access required. Please allow camera permissions and refresh the page.');
-    });
+  
+  console.log('✅ Camera API available');
 }
 
-// Force AR.js camera initialization
-function initializeARCamera() {
-  console.log('🎥 Forcing AR.js camera initialization...');
-  
-  // Try to trigger AR.js camera setup
-  const scene = document.querySelector('a-scene');
-  if (scene && scene.systems && scene.systems.arjs) {
-    console.log('📡 AR.js system found, attempting to start camera');
-    try {
-      // Force AR.js to start
-      if (scene.systems.arjs.start) {
-        scene.systems.arjs.start();
-      }
-    } catch (e) {
-      console.log('⚠️ Could not force start AR.js:', e.message);
-    }
-  }
-  
-  // Alternative: manually create video element if needed
-  setTimeout(checkVideoElement, 2000);
-}
-
-// Check if video element exists and is displaying
-function checkVideoElement() {
-  const videos = document.querySelectorAll('video');
-  console.log('🎬 Found video elements:', videos.length);
-  
-  videos.forEach((video, index) => {
-    console.log(`Video ${index}:`, {
-      src: video.src,
-      srcObject: !!video.srcObject,
-      readyState: video.readyState,
-      videoWidth: video.videoWidth,
-      videoHeight: video.videoHeight,
-      style: video.style.cssText
-    });
-    
-    // Ensure video is visible and playing
-    video.style.display = 'block';
-    video.style.visibility = 'visible';
-    video.style.opacity = '1';
-    video.play().catch(e => console.log('Video play error:', e));
-  });
-  
-  if (videos.length === 0) {
-    console.log('❌ No video elements found - camera background missing');
-    showCameraError();
-  }
-}
 
 function showCameraError() {
   if (loadingIndicator) {
     loadingIndicator.innerHTML = `
       <div style="color: #ff6b6b;">📹 Camera background not visible</div>
       <div style="font-size: 14px; margin-top: 10px;">
-        AR objects are working but camera view is missing.<br>
-        This might be a browser compatibility issue.
+        AR.js may need a moment to initialize.<br>
+        The boxes should still work even without camera background.
       </div>
       <button onclick="location.reload()" style="margin-top: 10px; padding: 8px 16px; background: #2b7a78; color: white; border: none; border-radius: 4px;">Retry</button>
     `;
@@ -146,15 +73,11 @@ function initializeAR() {
   
   if (scene) {
     let renderStarted = false;
-    let cameraVisible = false;
     
     scene.addEventListener('renderstart', function() {
       if (!renderStarted) {
         renderStarted = true;
         console.log('📷 AR scene render started - camera should be active');
-        
-        // Check for video after render starts
-        setTimeout(checkVideoElement, 1000);
         
         // Hide loading indicator when camera starts rendering
         setTimeout(() => {
@@ -172,67 +95,29 @@ function initializeAR() {
     // Listen for AR.js specific events
     scene.addEventListener('arjs-video-loaded', function() {
       console.log('📹 AR.js video loaded');
-      cameraVisible = true;
     });
     
-    // Ensure loading indicator is hidden after reasonable time
+    // Check camera status after reasonable time
     setTimeout(() => {
-      console.log('⏰ Timeout reached, checking camera status');
+      console.log('⏰ Checking camera status...');
+      const videos = document.querySelectorAll('video');
+      console.log('🎬 Found video elements:', videos.length);
+      
       if (loadingIndicator) {
         loadingIndicator.style.display = 'none';
       }
       
-      // If no video is visible, try manual camera setup
-      if (!cameraVisible) {
-        console.log('🔧 Camera background not visible, trying manual setup');
-        tryManualCameraSetup();
+      if (videos.length === 0) {
+        console.log('❌ No video elements found after timeout');
+        showCameraError();
+      } else {
+        console.log('✅ Camera background should be visible');
       }
-    }, 6000);
+    }, 4000);
   }
 }
 
-// Try to manually create camera background if AR.js fails
-function tryManualCameraSetup() {
-  console.log('🛠️ Attempting manual camera setup...');
-  
-  navigator.mediaDevices.getUserMedia({ 
-    video: { 
-      facingMode: 'environment',
-      width: { ideal: 1280 },
-      height: { ideal: 720 }
-    } 
-  })
-  .then(function(stream) {
-    console.log('� Manual camera stream obtained');
-    
-    // Create video element for background
-    let video = document.createElement('video');
-    video.srcObject = stream;
-    video.autoplay = true;
-    video.playsInline = true;
-    video.muted = true;
-    video.style.cssText = `
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      z-index: -1;
-    `;
-    
-    document.body.insertBefore(video, document.body.firstChild);
-    
-    video.onloadedmetadata = function() {
-      console.log('✅ Manual video background is now visible');
-      video.play();
-    };
-  })
-  .catch(function(err) {
-    console.error('❌ Manual camera setup failed:', err);
-    showCameraError();
-  });
-}
+
 
 // Setup GPS tracking (separate from camera)
 function setupGPS() {
@@ -552,6 +437,7 @@ window.hideAllBoxes = hideAllBoxes;
 // Make functions available globally for console access
 window.enableTestMode = enableTestMode;
 window.disableTestMode = disableTestMode;
+window.checkCameraStatus = checkCameraStatus;
 
 // On load, hide popup and initialize
 window.onload = () => {
@@ -564,12 +450,13 @@ window.onload = () => {
   console.log('   disableTestMode() - Hide test box, enable normal game mode');
   console.log('   showAllBoxes() - Force show all mystery boxes (for testing)');
   console.log('   hideAllBoxes() - Hide all mystery boxes');
+  console.log('   checkCameraStatus() - Check camera API availability');
   console.log('🗺️ Normal mode: Mystery boxes appear when within ' + THRESHOLD_METERS + 'm of target locations');
   console.log('📱 If boxes are "visible" but you can\'t see them, try showAllBoxes() to test AR rendering');
   
-  debugCameraAccess();
+  // Initialize AR first - let AR.js handle camera
   initializeAR();
   
-  // Start GPS setup after a delay
-  setTimeout(setupGPS, 3000);
+  // Start GPS setup after AR has had time to start
+  setTimeout(setupGPS, 2000);
 };
