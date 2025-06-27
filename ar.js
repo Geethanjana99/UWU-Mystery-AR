@@ -3,7 +3,7 @@
 // Target coordinates
 const TARGET_LAT = 6.985161867439368;
 const TARGET_LON = 81.07362372073608;
-const THRESHOLD_METERS = 500; // Back to 25 meters for real gameplay
+const THRESHOLD_METERS = 25; // Back to 25 meters for real gameplay
 
 const mysteryBox = document.getElementById('mysteryBox');
 const testBox = document.getElementById('testBox');
