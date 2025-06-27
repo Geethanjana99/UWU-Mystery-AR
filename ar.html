@@ -3,6 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>Find the Mystery Object (AR)</title>
   <link rel="stylesheet" href="style.css">
   <!-- A-Frame & AR.js -->
@@ -12,17 +14,15 @@
 <body>
   <a-scene
     vr-mode-ui="enabled: false"
-    arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3; gpsMinDistance: 5;"
-    renderer="logarithmicDepthBuffer: true;"
+    arjs="sourceType: webcam; videoTexture: true; debugUIEnabled: false;"
+    renderer="antialias: true; alpha: true; precision: mediump;"
     embedded
     class="ar-scene">
     
     <!-- Camera with GPS -->
     <a-camera 
       gps-camera 
-      rotation-reader
-      look-controls-enabled="false"
-      arjs-look-controls="smoothingFactor: 0.1">
+      rotation-reader>
     </a-camera>
     <a-box id="mysteryBox"
       gps-entity-place="latitude: 6.985462148939262; longitude: 81.0734485580701"

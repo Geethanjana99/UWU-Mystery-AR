@@ -17,6 +17,14 @@ body, html {
   left: 0;
   z-index: 1;
 }
+
+/* Ensure video element takes full screen on mobile */
+.ar-scene canvas,
+.ar-scene video {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover;
+}
 .container {
   max-width: 400px;
   margin: 0 auto;

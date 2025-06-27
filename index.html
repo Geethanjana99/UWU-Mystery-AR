@@ -16,6 +16,8 @@
     <button id="startBtn">Start Game</button>
     <br><br>
     <button id="testBtn" class="test-btn">Test Camera First</button>
+    <br><br>
+    <button id="simpleTestBtn" class="test-btn">Simple AR Test</button>
   </div>
   <script>
     document.getElementById('startBtn').onclick = function() {
@@ -23,6 +25,9 @@
     };
     document.getElementById('testBtn').onclick = function() {
       window.location.href = 'camera-test.html';
+    };
+    document.getElementById('simpleTestBtn').onclick = function() {
+      window.location.href = 'simple-ar-test.html';
     };
   </script>
 </body>

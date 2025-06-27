@@ -11,16 +11,49 @@ const loadingIndicator = document.getElementById('loadingIndicator');
 
 // Debug function to check camera access
 function debugCameraAccess() {
-  navigator.mediaDevices.getUserMedia({ video: true })
+  console.log('🔍 Checking camera access...');
+  console.log('User Agent:', navigator.userAgent);
+  console.log('Is mobile:', /Mobi|Android/i.test(navigator.userAgent));
+  console.log('Protocol:', window.location.protocol);
+  
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    console.error('❌ getUserMedia not supported');
+    alert('Your browser does not support camera access. Please use a modern browser.');
+    return;
+  }
+
+  navigator.mediaDevices.getUserMedia({ 
+    video: { 
+      facingMode: 'environment',
+      width: { ideal: 1280, max: 1920 },
+      height: { ideal: 720, max: 1080 }
+    } 
+  })
     .then(function(stream) {
       console.log('✅ Camera access granted');
       console.log('Camera constraints:', stream.getVideoTracks()[0].getSettings());
       // Stop the stream since AR.js will handle it
       stream.getTracks().forEach(track => track.stop());
+      
+      // Hide loading indicator since camera works
+      setTimeout(() => {
+        if (loadingIndicator) {
+          loadingIndicator.style.display = 'none';
+        }
+      }, 3000);
     })
     .catch(function(err) {
       console.error('❌ Camera access denied:', err);
-      alert('Camera access is required for AR functionality. Please allow camera permissions and reload the page.');
+      
+      // Show user-friendly error message
+      if (loadingIndicator) {
+        loadingIndicator.innerHTML = `
+          <div class="spinner"></div>
+          <p>Camera access required</p>
+          <p style="font-size: 14px;">Please allow camera permissions and refresh the page</p>
+          <button onclick="location.reload()" style="margin-top: 10px; padding: 8px 16px; background: #2b7a78; color: white; border: none; border-radius: 4px;">Retry</button>
+        `;
+      }
     });
 }
 
@@ -29,30 +62,39 @@ function initializeAR() {
   console.log('🚀 Initializing AR scene...');
   
   // Wait for A-Frame to be ready
-  document.addEventListener('DOMContentLoaded', function() {
-    const scene = document.querySelector('a-scene');
-    
-    if (scene) {
-      scene.addEventListener('renderstart', function() {
-        console.log('📷 AR scene render started');
-        // Hide loading indicator when camera starts
-        if (loadingIndicator) {
-          loadingIndicator.style.display = 'none';
-        }
-      });
-      
-      scene.addEventListener('loaded', function() {
-        console.log('✅ AR scene loaded successfully');
-      });
-      
-      // Also try hiding loading indicator after a timeout
+  const scene = document.querySelector('a-scene');
+  
+  if (scene) {
+    scene.addEventListener('renderstart', function() {
+      console.log('📷 AR scene render started');
+      // Hide loading indicator when camera starts
       setTimeout(() => {
         if (loadingIndicator) {
           loadingIndicator.style.display = 'none';
         }
-      }, 5000);
-    }
-  });
+      }, 2000);
+    });
+    
+    scene.addEventListener('loaded', function() {
+      console.log('✅ AR scene loaded successfully');
+    });
+    
+    // Listen for camera stream start
+    scene.addEventListener('camera-init', function() {
+      console.log('📹 Camera initialized');
+      if (loadingIndicator) {
+        loadingIndicator.style.display = 'none';
+      }
+    });
+    
+    // Fallback timeout to hide loading indicator
+    setTimeout(() => {
+      console.log('⏰ Timeout reached, hiding loading indicator');
+      if (loadingIndicator) {
+        loadingIndicator.style.display = 'none';
+      }
+    }, 8000);
+  }
 }
 
 // Helper: Haversine formula for distance between two lat/lon points

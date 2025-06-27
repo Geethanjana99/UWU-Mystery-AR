@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Simple AR Test</title>
+  <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/ar.js@4.0.2/aframe/build/aframe-ar.js"></script>
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+    
+    .info {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      background: rgba(0,0,0,0.7);
+      color: white;
+      padding: 10px;
+      border-radius: 5px;
+      font-family: Arial, sans-serif;
+      font-size: 14px;
+      z-index: 1000;
+      max-width: 300px;
+    }
+    
+    .loading {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0,0,0,0.8);
+      color: white;
+      padding: 20px;
+      border-radius: 10px;
+      text-align: center;
+      z-index: 1001;
+    }
+  </style>
+</head>
+<body>
+  <div id="loading" class="loading">
+    <div>📱 Starting Camera...</div>
+    <div style="margin-top: 10px; font-size: 12px;">
+      Allow camera permissions when prompted
+    </div>
+  </div>
+  
+  <div id="info" class="info">
+    <div>📍 Simple AR Camera Test</div>
+    <div id="status">Initializing...</div>
+  </div>
+
+  <a-scene
+    vr-mode-ui="enabled: false"
+    arjs="sourceType: webcam; debugUIEnabled: true;"
+    renderer="antialias: true; alpha: true;"
+    embedded>
+    
+    <a-camera></a-camera>
+    
+    <!-- Simple test box that's always visible -->
+    <a-box 
+      position="0 0 -3" 
+      rotation="0 45 0" 
+      color="#ff6b6b"
+      animation="property: rotation; to: 0 405 0; loop: true; dur: 2000">
+    </a-box>
+    
+    <a-text 
+      value="AR Camera Active!" 
+      position="0 2 -3" 
+      color="#ffffff"
+      align="center">
+    </a-text>
+  </a-scene>
+
+  <script>
+    const loading = document.getElementById('loading');
+    const status = document.getElementById('status');
+    let cameraStarted = false;
+
+    // Check camera permissions
+    function checkCamera() {
+      status.textContent = 'Requesting camera...';
+      
+      navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+        .then(stream => {
+          console.log('✅ Camera permission granted');
+          status.textContent = 'Camera permission OK';
+          
+          // Stop test stream, let AR.js handle it
+          stream.getTracks().forEach(track => track.stop());
+          
+          // Hide loading after delay
+          setTimeout(() => {
+            loading.style.display = 'none';
+            status.textContent = 'AR Camera should be active';
+          }, 3000);
+        })
+        .catch(err => {
+          console.error('❌ Camera error:', err);
+          status.textContent = 'Camera permission denied: ' + err.name;
+          loading.innerHTML = `
+            <div>❌ Camera Access Required</div>
+            <div style="margin-top: 10px; font-size: 12px;">
+              Please allow camera access and refresh
+            </div>
+            <button onclick="location.reload()" style="margin-top: 10px; padding: 8px 16px; background: #ff6b6b; color: white; border: none; border-radius: 4px;">
+              Retry
+            </button>
+          `;
+        });
+    }
+
+    // Listen for A-Frame events
+    document.addEventListener('DOMContentLoaded', function() {
+      const scene = document.querySelector('a-scene');
+      
+      scene.addEventListener('loaded', function() {
+        console.log('A-Frame scene loaded');
+        status.textContent = 'A-Frame loaded';
+        checkCamera();
+      });
+      
+      scene.addEventListener('renderstart', function() {
+        console.log('Render started');
+        if (!cameraStarted) {
+          cameraStarted = true;
+          status.textContent = 'Rendering started';
+        }
+      });
+    });
+
+    // Fallback timeout
+    setTimeout(() => {
+      if (loading.style.display !== 'none') {
+        loading.style.display = 'none';
+        status.textContent = 'Timeout - check console for errors';
+      }
+    }, 10000);
+  </script>
+</body>
+</html>
