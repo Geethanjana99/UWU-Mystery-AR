@@ -1,9 +1,9 @@
 // ar.js - AR scene logic for mystery object hunt
 
 // Target coordinates
-const TARGET_LAT = 6.985462148939262;
-const TARGET_LON = 81.0734485580701;
-const THRESHOLD_METERS = 25; // Back to 25 meters for real gameplay
+const TARGET_LAT = 6.9850607;
+const TARGET_LON = 81.0710488;
+const THRESHOLD_METERS = 5; // Back to 25 meters for real gameplay
 
 const mysteryBox = document.getElementById('mysteryBox');
 const testBox = document.getElementById('testBox');
