@@ -3,15 +3,15 @@
 // Target coordinates - Main location
 const TARGET_LAT = 6.985161867439368;
 const TARGET_LON = 81.07362372073608;
-const THRESHOLD_METERS = 5; // Show mystery boxes when within 5 meters (small range for buildings)
+const THRESHOLD_METERS = 15; // Show mystery boxes when within 15 meters
 
-// Multiple mystery box locations in a very small area (20m x 20m range for buildings)
+// Multiple mystery box locations spread around different areas (100m x 100m range)
 const MYSTERY_LOCATIONS = [
   { id: 'mysteryBox1', lat: 6.985161867439368, lon: 81.07362372073608, color: '#FF0000' }, // Red - Central location
-  { id: 'mysteryBox2', lat: 6.985181867439368, lon: 81.07372372073608, color: '#00FF00' }, // Green - 2m North, 10m East
-  { id: 'mysteryBox3', lat: 6.985141867439368, lon: 81.07352372073608, color: '#0000FF' }, // Blue - 2m South, 10m West  
-  { id: 'mysteryBox4', lat: 6.985171867439368, lon: 81.07352372073608, color: '#FFFF00' }, // Yellow - 1m North, 10m West
-  { id: 'mysteryBox5', lat: 6.985151867439368, lon: 81.07372372073608, color: '#FF00FF' }  // Magenta - 1m South, 10m East
+  { id: 'mysteryBox2', lat: 6.985261867439368, lon: 81.07412372073608, color: '#00FF00' }, // Green - North (10m north, 50m east)
+  { id: 'mysteryBox3', lat: 6.985061867439368, lon: 81.07312372073608, color: '#0000FF' }, // Blue - South (10m south, 50m west)  
+  { id: 'mysteryBox4', lat: 6.985211867439368, lon: 81.07312372073608, color: '#FFFF00' }, // Yellow - North-West (5m north, 50m west)
+  { id: 'mysteryBox5', lat: 6.985111867439368, lon: 81.07412372073608, color: '#FF00FF' }  // Magenta - South-East (5m south, 50m east)
 ];
 
 const mysteryBoxes = MYSTERY_LOCATIONS.map(loc => document.getElementById(loc.id)).filter(box => box);
