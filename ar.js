@@ -7,6 +7,53 @@ const THRESHOLD_METERS = 25; // Show object if within 25 meters
 
 const box = document.getElementById('mysteryBox');
 const popup = document.getElementById('popup');
+const loadingIndicator = document.getElementById('loadingIndicator');
+
+// Debug function to check camera access
+function debugCameraAccess() {
+  navigator.mediaDevices.getUserMedia({ video: true })
+    .then(function(stream) {
+      console.log('✅ Camera access granted');
+      console.log('Camera constraints:', stream.getVideoTracks()[0].getSettings());
+      // Stop the stream since AR.js will handle it
+      stream.getTracks().forEach(track => track.stop());
+    })
+    .catch(function(err) {
+      console.error('❌ Camera access denied:', err);
+      alert('Camera access is required for AR functionality. Please allow camera permissions and reload the page.');
+    });
+}
+
+// Initialize AR scene and camera
+function initializeAR() {
+  console.log('🚀 Initializing AR scene...');
+  
+  // Wait for A-Frame to be ready
+  document.addEventListener('DOMContentLoaded', function() {
+    const scene = document.querySelector('a-scene');
+    
+    if (scene) {
+      scene.addEventListener('renderstart', function() {
+        console.log('📷 AR scene render started');
+        // Hide loading indicator when camera starts
+        if (loadingIndicator) {
+          loadingIndicator.style.display = 'none';
+        }
+      });
+      
+      scene.addEventListener('loaded', function() {
+        console.log('✅ AR scene loaded successfully');
+      });
+      
+      // Also try hiding loading indicator after a timeout
+      setTimeout(() => {
+        if (loadingIndicator) {
+          loadingIndicator.style.display = 'none';
+        }
+      }, 5000);
+    }
+  });
+}
 
 // Helper: Haversine formula for distance between two lat/lon points
 function getDistanceMeters(lat1, lon1, lat2, lon2) {
@@ -40,7 +87,9 @@ box.addEventListener('click', function () {
   alert('🎉 You found the hidden object!');
 });
 
-// On load, hide popup
+// On load, hide popup and initialize
 window.onload = () => {
   popup.classList.add('hidden');
+  debugCameraAccess();
+  initializeAR();
 };

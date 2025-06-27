@@ -7,6 +7,16 @@ body, html {
   color: #222;
   min-height: 100vh;
 }
+
+/* AR Scene Styles */
+.ar-scene {
+  height: 100vh !important;
+  width: 100% !important;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1;
+}
 .container {
   max-width: 400px;
   margin: 0 auto;
@@ -36,6 +46,12 @@ button#startBtn {
 button#startBtn:hover {
   background: #205c5a;
 }
+.test-btn {
+  background: #666 !important;
+}
+.test-btn:hover {
+  background: #555 !important;
+}
 /* AR scene popup */
 .popup {
   position: fixed;
@@ -54,6 +70,35 @@ button#startBtn:hover {
 }
 .hidden {
   display: none;
+}
+
+/* Loading indicator */
+.loading-indicator {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 2rem;
+  border-radius: 10px;
+  text-align: center;
+  z-index: 1001;
+}
+
+.spinner {
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top: 3px solid #fff;
+  width: 30px;
+  height: 30px;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 1rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 @media (max-width: 600px) {
   h1 { font-size: 1.5rem; }

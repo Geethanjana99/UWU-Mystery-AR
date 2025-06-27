@@ -14,10 +14,15 @@
       When you reach the secret location, the object will appear in AR. Tap it to win!
     </p>
     <button id="startBtn">Start Game</button>
+    <br><br>
+    <button id="testBtn" class="test-btn">Test Camera First</button>
   </div>
   <script>
     document.getElementById('startBtn').onclick = function() {
       window.location.href = 'ar.html';
+    };
+    document.getElementById('testBtn').onclick = function() {
+      window.location.href = 'camera-test.html';
     };
   </script>
 </body>
