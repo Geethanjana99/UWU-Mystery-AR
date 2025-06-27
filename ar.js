@@ -3,7 +3,7 @@
 // Target coordinates - Main location
 const TARGET_LAT = 6.985161867439368;
 const TARGET_LON = 81.07362372073608;
-const THRESHOLD_METERS = 5; // Show mystery boxes when within 50 meters
+const THRESHOLD_METERS = 15; // Show mystery boxes when within 15 meters
 
 // Multiple mystery box locations spread around different areas (100m x 100m range)
 const MYSTERY_LOCATIONS = [
@@ -448,13 +448,31 @@ function checkDistance() {
     console.log(`📍 ${location.id} distance: ${dist.toFixed(1)}m (threshold: ${THRESHOLD_METERS}m)`);
     
     if (dist < THRESHOLD_METERS) {
-      if (boxElement) {
+      if (boxElement && boxElement.getAttribute('visible') !== 'true') {
+        // Add special entrance animation when box becomes visible
         boxElement.setAttribute('visible', 'true');
-        console.log(`🎯 ${location.id} is now visible! Distance: ${dist.toFixed(1)}m`);
+        
+        // Add entrance animation
+        boxElement.setAttribute('animation__appear', 'property: scale; from: 0 0 0; to: 1 1 1; dur: 1000; easing: easeOutBounce');
+        boxElement.setAttribute('animation__glow', 'property: rotation; from: 0 0 0; to: 0 720 0; dur: 2000; easing: easeOutQuad');
+        
+        console.log(`🎯 ${location.id} is now visible with animation! Distance: ${dist.toFixed(1)}m`);
+        
+        // Remove entrance animations after they complete
+        setTimeout(() => {
+          boxElement.removeAttribute('animation__appear');
+          boxElement.removeAttribute('animation__glow');
+        }, 2000);
       }
     } else {
-      if (boxElement) {
-        boxElement.setAttribute('visible', 'false');
+      if (boxElement && boxElement.getAttribute('visible') === 'true') {
+        // Add exit animation before hiding
+        boxElement.setAttribute('animation__disappear', 'property: scale; from: 1 1 1; to: 0 0 0; dur: 500; easing: easeInQuad');
+        
+        setTimeout(() => {
+          boxElement.setAttribute('visible', 'false');
+          boxElement.removeAttribute('animation__disappear');
+        }, 500);
       }
     }
   });
@@ -491,7 +509,25 @@ MYSTERY_LOCATIONS.forEach((location) => {
   if (boxElement) {
     boxElement.addEventListener('click', function () {
       console.log(`🎉 ${location.id} clicked!`);
-      boxElement.setAttribute('visible', 'false');
+      
+      // Add victory animation before hiding
+      boxElement.setAttribute('animation__victory', 'property: scale; from: 1 1 1; to: 2 2 2; dur: 300; easing: easeOutQuad');
+      boxElement.setAttribute('animation__spin', 'property: rotation; from: 0 0 0; to: 0 360 0; dur: 600; easing: easeOutQuad');
+      boxElement.setAttribute('animation__fade', 'property: material.opacity; from: 1; to: 0; dur: 600; delay: 300; easing: easeInQuad');
+      
+      // Hide after animation completes
+      setTimeout(() => {
+        boxElement.setAttribute('visible', 'false');
+        boxElement.removeAttribute('animation__victory');
+        boxElement.removeAttribute('animation__spin');
+        boxElement.removeAttribute('animation__fade');
+        // Reset opacity for future visibility
+        const boxChild = boxElement.querySelector('a-box');
+        if (boxChild) {
+          boxChild.setAttribute('material.opacity', '1');
+        }
+      }, 900);
+      
       foundBoxes.add(location.id);
       
       if (popup) {
