@@ -135,6 +135,95 @@ button#startBtn:hover {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
+
+/* Enhanced Direction Hint Styles */
+#directionHint {
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.9), rgba(20, 20, 50, 0.9)) !important;
+  border: 2px solid #ffc107 !important;
+  box-shadow: 0 0 20px rgba(255, 193, 7, 0.5), 0 4px 15px rgba(0, 0, 0, 0.3) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  backdrop-filter: blur(10px) !important;
+  animation: directionPulse 2s ease-in-out infinite alternate;
+}
+
+@keyframes directionPulse {
+  0% { 
+    box-shadow: 0 0 20px rgba(255, 193, 7, 0.5), 0 4px 15px rgba(0, 0, 0, 0.3);
+    border-color: #ffc107;
+  }
+  100% { 
+    box-shadow: 0 0 30px rgba(255, 193, 7, 0.8), 0 4px 20px rgba(0, 0, 0, 0.4);
+    border-color: #ffdb4d;
+  }
+}
+
+/* Enhanced popup styles */
+.popup {
+  background: linear-gradient(135deg, #fffbe7, #fff3c4) !important;
+  border: 3px solid #ffc107 !important;
+  box-shadow: 0 0 30px rgba(255, 193, 7, 0.6), 0 8px 32px rgba(0, 0, 0, 0.2) !important;
+  animation: popupBounce 0.6s ease-out;
+}
+
+@keyframes popupBounce {
+  0% { 
+    transform: translate(-50%, -50%) scale(0.3) rotate(-10deg);
+    opacity: 0;
+  }
+  50% { 
+    transform: translate(-50%, -50%) scale(1.1) rotate(5deg);
+  }
+  100% { 
+    transform: translate(-50%, -50%) scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+/* Enhanced loading indicator */
+.loading-indicator {
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.95), rgba(30, 30, 60, 0.95)) !important;
+  border: 2px solid #2b7a78 !important;
+  box-shadow: 0 0 25px rgba(43, 122, 120, 0.4) !important;
+}
+
+.spinner {
+  border-top-color: #2b7a78 !important;
+  box-shadow: 0 0 15px rgba(43, 122, 120, 0.3);
+}
+
+/* Additional visual enhancements */
+body {
+  overflow: hidden !important; /* Prevent scrolling in AR mode */
+}
+
+/* Ensure touch interactions work properly */
+.ar-scene * {
+  pointer-events: auto !important;
+}
+
+/* Success message enhancements */
+.success-message {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: linear-gradient(135deg, #d4edda, #c3e6cb);
+  color: #155724;
+  border: 2px solid #28a745;
+  border-radius: 15px;
+  padding: 20px 30px;
+  font-size: 18px;
+  font-weight: bold;
+  z-index: 1002;
+  box-shadow: 0 0 25px rgba(40, 167, 69, 0.5);
+  animation: successPulse 3s ease-in-out;
+}
+
+@keyframes successPulse {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); }
+  50% { transform: translate(-50%, -50%) scale(1.05); }
+}
+
 @media (max-width: 600px) {
   h1 { font-size: 1.5rem; }
   .container { padding: 1.2rem 0.5rem; }

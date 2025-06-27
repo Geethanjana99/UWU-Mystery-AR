@@ -3,14 +3,14 @@
 // Target coordinates - Main location
 const TARGET_LAT = 6.985161867439368;
 const TARGET_LON = 81.07362372073608;
-const THRESHOLD_METERS = 25; // Back to 25 meters for real gameplay
+const THRESHOLD_METERS = 25; // Show mystery boxes when within 50 meters
 
 // Multiple mystery box locations around the main target
 const MYSTERY_LOCATIONS = [
   { id: 'mysteryBox1', lat: 6.985161867439368, lon: 81.07362372073608, color: '#FF0000' }, // Red - Main
-  { id: 'mysteryBox2', lat: 6.985261867439368, lon: 81.07372372073608, color: '#00FF00' }, // Green - North-East
-  { id: 'mysteryBox3', lat: 6.985061867439368, lon: 81.07352372073608, color: '#0000FF' }, // Blue - South-West  
-  { id: 'mysteryBox4', lat: 6.985261867439368, lon: 81.07352372073608, color: '#FFFF00' }, // Yellow - North-West
+  { id: 'mysteryBox2', lat: 6.985261867439365, lon: 81.07372372073602, color: '#00FF00' }, // Green - North-East
+  { id: 'mysteryBox3', lat: 6.985061867439366, lon: 81.07352372073608, color: '#0000FF' }, // Blue - South-West  
+  { id: 'mysteryBox4', lat: 6.985261867439367, lon: 81.07352372073604, color: '#FFFF00' }, // Yellow - North-West
   { id: 'mysteryBox5', lat: 6.985061867439368, lon: 81.07372372073608, color: '#FF00FF' }  // Magenta - South-East
 ];
 
