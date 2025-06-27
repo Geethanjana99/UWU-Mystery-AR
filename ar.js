@@ -21,9 +21,10 @@ const loadingIndicator = document.getElementById('loadingIndicator');
 
 let gpsEnabled = false;
 let userLocation = null;
-let debugMode = false; // Disable debug mode - only show at correct location
+let debugMode = false; // Set to true to enable test box for AR testing
 let foundBoxes = new Set(); // Track found boxes
 let directionHint = null; // For direction indicator
+let testMode = false; // Set to true to show test box instead of mystery boxes
 
 // Debug function to check camera access
 function debugCameraAccess() {
@@ -296,14 +297,22 @@ function enableGPSFeatures() {
     camera.setAttribute('rotation-reader', '');
     console.log('📍 GPS camera features enabled');
   }
+  
+  // Hide test box when GPS is working (normal game mode)
+  if (testBox && !testMode) {
+    testBox.setAttribute('visible', 'false');
+    console.log('📦 Test box hidden - GPS working, game mode active');
+  }
 }
 
 function showFallbackMessage() {
-  // Show the test box and hide mystery box if GPS fails
-  if (testBox) {
+  // Only show test box if we're in test mode AND GPS fails
+  if (testMode && testBox) {
     testBox.setAttribute('visible', 'true');
+    console.log('📦 Showing test box for AR testing (GPS not available)');
+  } else {
+    console.log('📍 GPS not available, but test box hidden for game mode');
   }
-  console.log('📦 Showing test box instead of GPS-based content');
   
   // Create direction hint UI
   createDirectionHint();
@@ -530,9 +539,63 @@ if (testBox) {
   });
 }
 
+// Test mode functions for debugging
+function enableTestMode() {
+  testMode = true;
+  debugMode = true;
+  console.log('🧪 TEST MODE ENABLED - Test box will be visible for AR debugging');
+  
+  if (testBox) {
+    testBox.setAttribute('visible', 'true');
+    console.log('📦 Test box is now visible');
+  }
+  
+  // Hide mystery boxes in test mode
+  MYSTERY_LOCATIONS.forEach((location) => {
+    const boxElement = document.getElementById(location.id);
+    if (boxElement) {
+      boxElement.setAttribute('visible', 'false');
+    }
+  });
+  
+  console.log('🎮 Mystery boxes hidden in test mode');
+  console.log('💡 Use disableTestMode() to return to game mode');
+}
+
+function disableTestMode() {
+  testMode = false;
+  debugMode = false;
+  console.log('🎮 GAME MODE ENABLED - Test box hidden, mystery boxes will show based on GPS');
+  
+  if (testBox) {
+    testBox.setAttribute('visible', 'false');
+    console.log('📦 Test box is now hidden');
+  }
+  
+  // Re-check distances for mystery boxes
+  if (gpsEnabled) {
+    checkDistance();
+  }
+  
+  console.log('🗺️ Mystery boxes will show when within range');
+  console.log('💡 Use enableTestMode() to test AR functionality');
+}
+
+// Make functions available globally for console access
+window.enableTestMode = enableTestMode;
+window.disableTestMode = disableTestMode;
+
 // On load, hide popup and initialize
 window.onload = () => {
   popup.classList.add('hidden');
+  
+  // Console help message
+  console.log('🎮 UWU Mystery AR Hunt loaded!');
+  console.log('💡 Debug commands available:');
+  console.log('   enableTestMode() - Show yellow test box for AR testing');
+  console.log('   disableTestMode() - Hide test box, enable normal game mode');
+  console.log('🗺️ Normal mode: Mystery boxes appear when within ' + THRESHOLD_METERS + 'm of target locations');
+  
   debugCameraAccess();
   initializeAR();
   

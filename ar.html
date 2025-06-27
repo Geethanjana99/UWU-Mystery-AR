@@ -26,41 +26,42 @@
       wasd-controls="enabled: false">
     </a-camera>
     
-    <!-- Large visible test box for debugging -->
+    <!-- Yellow test box for debugging (hidden during actual game) -->
     <a-box id="testBox"
       position="0 0 -5"
       color="#FFC107"
-      depth="2" height="2" width="2"
+      depth="1" height="1" width="1"
       material="emissive: #FFC107; emissiveIntensity: 0.2"
       animation__rotate="property: rotation; to: 0 360 0; loop: true; dur: 4000"
-      animation__pulse="property: scale; to: 1.2 1.2 1.2; loop: true; dir: alternate; dur: 1500; easing: easeInOutSine">
+      animation__pulse="property: scale; to: 1.1 1.1 1.1; loop: true; dir: alternate; dur: 1500; easing: easeInOutSine"
+      visible="false">
     </a-box>
     
-    <!-- Mystery boxes around the area (initially hidden) - Large, glowing, animated -->
+    <!-- Mystery boxes around the area (initially hidden) - Smaller size with effects -->
     <!-- Red Mystery Box with label and effects -->
     <a-entity id="mysteryBox1"
       gps-entity-place="latitude: 6.985161867439368; longitude: 81.07362372073608"
       visible="false">
       <a-box 
         color="#FF0000"
-        depth="2" height="2" width="2"
+        depth="1" height="1" width="1"
         material="emissive: #FF0000; emissiveIntensity: 0.4; metalness: 0.1; roughness: 0.3"
         animation__rotate="property: rotation; to: 0 360 0; loop: true; dur: 6000"
-        animation__bob="property: position; to: 0 0.8 0; loop: true; dir: alternate; dur: 2000; easing: easeInOutSine"
+        animation__bob="property: position; to: 0 0.5 0; loop: true; dir: alternate; dur: 2000; easing: easeInOutSine"
         animation__pulse="property: material.emissiveIntensity; to: 0.8; loop: true; dir: alternate; dur: 1500; easing: easeInOutSine">
       </a-box>
       <!-- Outer glow ring -->
       <a-ring
-        position="0 -1 0"
+        position="0 -0.5 0"
         color="#FF0000"
-        radius-inner="1.5" radius-outer="2.5"
+        radius-inner="0.8" radius-outer="1.3"
         material="emissive: #FF0000; emissiveIntensity: 0.6; transparent: true; opacity: 0.6"
         animation__spin="property: rotation; to: 0 360 0; loop: true; dur: 4000"
         animation__glow="property: material.opacity; to: 0.3; loop: true; dir: alternate; dur: 1200">
       </a-ring>
       <a-text 
         value="RED BOX" 
-        position="0 3 0" 
+        position="0 2 0" 
         color="#ffffff"
         align="center"
         font="dejavu"
@@ -75,24 +76,24 @@
       visible="false">
       <a-box 
         color="#00FF00"
-        depth="2" height="2" width="2"
+        depth="1" height="1" width="1"
         material="emissive: #00FF00; emissiveIntensity: 0.4; metalness: 0.1; roughness: 0.3"
         animation__rotate="property: rotation; to: 360 0 0; loop: true; dur: 5000"
-        animation__bob="property: position; to: 0 0.8 0; loop: true; dir: alternate; dur: 2500; easing: easeInOutSine"
+        animation__bob="property: position; to: 0 0.5 0; loop: true; dir: alternate; dur: 2500; easing: easeInOutSine"
         animation__pulse="property: material.emissiveIntensity; to: 0.8; loop: true; dir: alternate; dur: 1200; easing: easeInOutSine">
       </a-box>
       <!-- Outer glow ring -->
       <a-ring
-        position="0 -1 0"
+        position="0 -0.5 0"
         color="#00FF00"
-        radius-inner="1.5" radius-outer="2.5"
+        radius-inner="0.8" radius-outer="1.3"
         material="emissive: #00FF00; emissiveIntensity: 0.6; transparent: true; opacity: 0.6"
         animation__spin="property: rotation; to: 0 -360 0; loop: true; dur: 3500"
         animation__glow="property: material.opacity; to: 0.3; loop: true; dir: alternate; dur: 1400">
       </a-ring>
       <a-text 
         value="GREEN BOX" 
-        position="0 3 0" 
+        position="0 2 0" 
         color="#ffffff"
         align="center"
         font="dejavu"
@@ -107,24 +108,24 @@
       visible="false">
       <a-box 
         color="#0000FF"
-        depth="2" height="2" width="2"
+        depth="1" height="1" width="1"
         material="emissive: #0000FF; emissiveIntensity: 0.4; metalness: 0.1; roughness: 0.3"
         animation__rotate="property: rotation; to: 0 0 360; loop: true; dur: 7000"
-        animation__bob="property: position; to: 0 0.8 0; loop: true; dir: alternate; dur: 3000; easing: easeInOutSine"
+        animation__bob="property: position; to: 0 0.5 0; loop: true; dir: alternate; dur: 3000; easing: easeInOutSine"
         animation__pulse="property: material.emissiveIntensity; to: 0.8; loop: true; dir: alternate; dur: 1800; easing: easeInOutSine">
       </a-box>
       <!-- Outer glow ring -->
       <a-ring
-        position="0 -1 0"
+        position="0 -0.5 0"
         color="#0000FF"
-        radius-inner="1.5" radius-outer="2.5"
+        radius-inner="0.8" radius-outer="1.3"
         material="emissive: #0000FF; emissiveIntensity: 0.6; transparent: true; opacity: 0.6"
         animation__spin="property: rotation; to: 0 360 0; loop: true; dur: 5000"
         animation__glow="property: material.opacity; to: 0.3; loop: true; dir: alternate; dur: 1000">
       </a-ring>
       <a-text 
         value="BLUE BOX" 
-        position="0 3 0" 
+        position="0 2 0" 
         color="#ffffff"
         align="center"
         font="dejavu"
@@ -139,24 +140,24 @@
       visible="false">
       <a-box 
         color="#FFFF00"
-        depth="2" height="2" width="2"
+        depth="1" height="1" width="1"
         material="emissive: #FFFF00; emissiveIntensity: 0.4; metalness: 0.1; roughness: 0.3"
         animation__rotate="property: rotation; to: 360 360 0; loop: true; dur: 4500"
-        animation__bob="property: position; to: 0 0.8 0; loop: true; dir: alternate; dur: 1800; easing: easeInOutSine"
+        animation__bob="property: position; to: 0 0.5 0; loop: true; dir: alternate; dur: 1800; easing: easeInOutSine"
         animation__pulse="property: material.emissiveIntensity; to: 0.8; loop: true; dir: alternate; dur: 1300; easing: easeInOutSine">
       </a-box>
       <!-- Outer glow ring -->
       <a-ring
-        position="0 -1 0"
+        position="0 -0.5 0"
         color="#FFFF00"
-        radius-inner="1.5" radius-outer="2.5"
+        radius-inner="0.8" radius-outer="1.3"
         material="emissive: #FFFF00; emissiveIntensity: 0.6; transparent: true; opacity: 0.6"
         animation__spin="property: rotation; to: 0 -360 0; loop: true; dur: 4000"
         animation__glow="property: material.opacity; to: 0.3; loop: true; dir: alternate; dur: 1600">
       </a-ring>
       <a-text 
         value="YELLOW BOX" 
-        position="0 3 0" 
+        position="0 2 0" 
         color="#ffffff"
         align="center"
         font="dejavu"
@@ -171,24 +172,24 @@
       visible="false">
       <a-box 
         color="#FF00FF"
-        depth="2" height="2" width="2"
+        depth="1" height="1" width="1"
         material="emissive: #FF00FF; emissiveIntensity: 0.4; metalness: 0.1; roughness: 0.3"
         animation__rotate="property: rotation; to: 360 0 360; loop: true; dur: 5500"
-        animation__bob="property: position; to: 0 0.8 0; loop: true; dir: alternate; dur: 2200; easing: easeInOutSine"
+        animation__bob="property: position; to: 0 0.5 0; loop: true; dir: alternate; dur: 2200; easing: easeInOutSine"
         animation__pulse="property: material.emissiveIntensity; to: 0.8; loop: true; dir: alternate; dur: 1700; easing: easeInOutSine">
       </a-box>
       <!-- Outer glow ring -->
       <a-ring
-        position="0 -1 0"
+        position="0 -0.5 0"
         color="#FF00FF"
-        radius-inner="1.5" radius-outer="2.5"
+        radius-inner="0.8" radius-outer="1.3"
         material="emissive: #FF00FF; emissiveIntensity: 0.6; transparent: true; opacity: 0.6"
         animation__spin="property: rotation; to: 0 360 0; loop: true; dur: 6000"
         animation__glow="property: material.opacity; to: 0.3; loop: true; dir: alternate; dur: 1100">
       </a-ring>
       <a-text 
         value="MAGENTA BOX" 
-        position="0 3 0" 
+        position="0 2 0" 
         color="#ffffff"
         align="center"
         font="dejavu"
