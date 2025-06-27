@@ -14,13 +14,14 @@
 <body>
   <a-scene
     vr-mode-ui="enabled: false"
-    arjs="sourceType: webcam; videoTexture: true; debugUIEnabled: false;"
+    arjs="sourceType: webcam; videoTexture: true; debugUIEnabled: true;"
     renderer="antialias: true; alpha: true; precision: mediump;"
     embedded
     class="ar-scene">
     
-    <!-- Camera without GPS for now -->
+    <!-- Camera setup for AR -->
     <a-camera 
+      arjs-device-orientation-controls="smoothingFactor: 0.1"
       look-controls="enabled: false"
       wasd-controls="enabled: false">
     </a-camera>
