@@ -1,0 +1,62 @@
+/* Mobile-first styles */
+body, html {
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background: #f7f7f7;
+  color: #222;
+  min-height: 100vh;
+}
+.container {
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+  text-align: center;
+}
+h1 {
+  font-size: 2.2rem;
+  margin-bottom: 1rem;
+  color: #2b7a78;
+}
+.instructions {
+  font-size: 1.1rem;
+  margin-bottom: 2rem;
+  color: #555;
+}
+button#startBtn {
+  background: #2b7a78;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 1rem 2.5rem;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+button#startBtn:hover {
+  background: #205c5a;
+}
+/* AR scene popup */
+.popup {
+  position: fixed;
+  top: 30%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #fffbe7;
+  color: #2b7a78;
+  border: 2px solid #ffc107;
+  border-radius: 10px;
+  padding: 2rem 2.5rem;
+  font-size: 1.5rem;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.15);
+  z-index: 1000;
+  text-align: center;
+}
+.hidden {
+  display: none;
+}
+@media (max-width: 600px) {
+  h1 { font-size: 1.5rem; }
+  .container { padding: 1.2rem 0.5rem; }
+  .popup { font-size: 1.1rem; padding: 1.2rem 1rem; }
+}

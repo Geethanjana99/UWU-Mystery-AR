@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mystery Object Hunt</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Mystery Object Hunt</h1>
+    <p class="instructions">
+      Use your phone to explore the real world and find the hidden AR object!<br>
+      When you reach the secret location, the object will appear in AR. Tap it to win!
+    </p>
+    <button id="startBtn">Start Game</button>
+  </div>
+  <script>
+    document.getElementById('startBtn').onclick = function() {
+      window.location.href = 'ar.html';
+    };
+  </script>
+</body>
+</html>

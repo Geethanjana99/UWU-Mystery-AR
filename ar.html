@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Find the Mystery Object (AR)</title>
+  <link rel="stylesheet" href="style.css">
+  <!-- A-Frame & AR.js -->
+  <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/build/aframe-ar-nft.js"></script>
+</head>
+<body>
+  <a-scene
+    embedded
+    vr-mode-ui="enabled: false"
+    arjs="sourceType: webcam; debugUIEnabled: false; gpsMinDistance: 5;">
+    <a-entity camera gps-camera rotation-reader></a-entity>
+    <a-box id="mysteryBox"
+      gps-entity-place="latitude: 6.985462148939262; longitude: 81.0734485580701"
+      color="#FFC107"
+      depth="1" height="1" width="1"
+      animation="property: rotation; to: 0 360 0; loop: true; dur: 4000"
+      visible="false"
+      event-set__click="_event: click; visible: false"
+      ></a-box>
+  </a-scene>
+  <div id="popup" class="popup hidden">🎉 You found the hidden object!</div>
+  <script src="ar.js"></script>
+</body>
+</html>
