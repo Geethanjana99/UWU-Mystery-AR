@@ -36,7 +36,7 @@
     
     <!-- Mystery box with GPS (initially hidden) -->
     <a-box id="mysteryBox"
-      gps-entity-place="latitude: 6.985462148939262; longitude: 81.0734485580701"
+      position="2 0 -5"
       color="#FF0000"
       depth="1" height="1" width="1"
       animation="property: rotation; to: 0 360 0; loop: true; dur: 4000"
@@ -49,6 +49,15 @@
       value="Camera Active! Look around to test AR" 
       position="0 2 -5" 
       color="#ffffff"
+      align="center"
+      font="dejavu">
+    </a-text>
+    
+    <!-- Debug instructions -->
+    <a-text 
+      value="Red mystery box will appear in 5 seconds!" 
+      position="0 1 -5" 
+      color="#ffff00"
       align="center"
       font="dejavu">
     </a-text>
