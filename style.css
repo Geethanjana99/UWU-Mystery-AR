@@ -191,24 +191,6 @@ button#startBtn:hover {
   box-shadow: 0 0 15px rgba(43, 122, 120, 0.3);
 }
 
-/* Animation for box found notification */
-@keyframes bounceIn {
-  0% {
-    transform: translate(-50%, -50%) scale(0.3);
-    opacity: 0;
-  }
-  50% {
-    transform: translate(-50%, -50%) scale(1.05);
-  }
-  70% {
-    transform: translate(-50%, -50%) scale(0.9);
-  }
-  100% {
-    transform: translate(-50%, -50%) scale(1);
-    opacity: 1;
-  }
-}
-
 /* Additional visual enhancements */
 body {
   overflow: hidden !important; /* Prevent scrolling in AR mode */
@@ -246,9 +228,4 @@ body {
   h1 { font-size: 1.5rem; }
   .container { padding: 1.2rem 0.5rem; }
   .popup { font-size: 1.1rem; padding: 1.2rem 1rem; }
-}
-
-/* Make sure AR objects are clickable */
-a-entity {
-  cursor: pointer;
 }

@@ -457,11 +457,6 @@ function checkDistance() {
         boxElement.setAttribute('animation__glow', 'property: rotation; from: 0 0 0; to: 0 720 0; dur: 2000; easing: easeOutQuad');
         
         console.log(`🎯 ${location.id} is now visible with animation! Distance: ${dist.toFixed(1)}m`);
-        console.log(`📍 Box coordinates: ${location.lat}, ${location.lon}`);
-        console.log(`👤 Your coordinates: ${userLocation.lat}, ${userLocation.lon}`);
-        
-        // Show on-screen notification
-        showBoxFoundNotification(location.id, dist);
         
         // Remove entrance animations after they complete
         setTimeout(() => {
@@ -486,68 +481,141 @@ function checkDistance() {
   updateDirectionHint();
 }
 
-// Show on-screen notification when box becomes visible
-function showBoxFoundNotification(boxId, distance) {
-  const notification = document.createElement('div');
-  notification.style.cssText = `
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: linear-gradient(135deg, #4CAF50, #45a049);
-    color: white;
-    padding: 20px 30px;
-    border-radius: 15px;
-    font-size: 18px;
-    font-weight: bold;
-    z-index: 1001;
-    box-shadow: 0 0 25px rgba(76, 175, 80, 0.6);
-    animation: bounceIn 0.6s ease-out;
-    text-align: center;
-  `;
-  
-  notification.innerHTML = `
-    🎯 <strong>${boxId} Found!</strong><br>
-    <span style="font-size: 14px;">Distance: ${distance.toFixed(1)}m</span><br>
-    <span style="font-size: 12px; opacity: 0.9;">Look around with your camera!</span>
-  `;
-  
-  document.body.appendChild(notification);
-  
-  // Remove notification after 4 seconds
-  setTimeout(() => {
-    notification.remove();
-  }, 4000);
+// Helper: Haversine formula for distance between two lat/lon points
+function getDistanceMeters(lat1, lon1, lat2, lon2) {
+  const R = 6371000;
+  const toRad = deg => deg * Math.PI / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+  const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+    Math.sin(dLon/2) * Math.sin(dLon/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  return R * c;
 }
 
-// Debug function to show all boxes (for testing)
-function showAllBoxes() {
-  console.log('🔧 DEBUG: Showing all mystery boxes for testing');
-  MYSTERY_LOCATIONS.forEach((location) => {
-    const boxElement = document.getElementById(location.id);
-    if (boxElement && !foundBoxes.has(location.id)) {
-      boxElement.setAttribute('visible', 'true');
-      console.log(`📦 ${location.id} forced visible`);
+// Listen for GPS updates from AR.js (backup method)
+window.addEventListener('gps-camera-update-position', function(e) {
+  if (gpsEnabled) {
+    const { latitude, longitude } = e.detail.position;
+    userLocation = { lat: latitude, lon: longitude };
+    checkDistance();
+  }
+});
+
+// Handle tap/click on the AR objects
+MYSTERY_LOCATIONS.forEach((location) => {
+  const boxElement = document.getElementById(location.id);
+  if (boxElement) {
+    boxElement.addEventListener('click', function () {
+      console.log(`🎉 ${location.id} clicked!`);
+      
+      // Add victory animation before hiding
+      boxElement.setAttribute('animation__victory', 'property: scale; from: 1 1 1; to: 2 2 2; dur: 300; easing: easeOutQuad');
+      boxElement.setAttribute('animation__spin', 'property: rotation; from: 0 0 0; to: 0 360 0; dur: 600; easing: easeOutQuad');
+      boxElement.setAttribute('animation__fade', 'property: material.opacity; from: 1; to: 0; dur: 600; delay: 300; easing: easeInQuad');
+      
+      // Hide after animation completes
+      setTimeout(() => {
+        boxElement.setAttribute('visible', 'false');
+        boxElement.removeAttribute('animation__victory');
+        boxElement.removeAttribute('animation__spin');
+        boxElement.removeAttribute('animation__fade');
+        // Reset opacity for future visibility
+        const boxChild = boxElement.querySelector('a-box');
+        if (boxChild) {
+          boxChild.setAttribute('material.opacity', '1');
+        }
+      }, 900);
+      
+      foundBoxes.add(location.id);
+      
+      if (popup) {
+        popup.classList.remove('hidden');
+        setTimeout(() => popup.classList.add('hidden'), 3500);
+      }
+      
+      // Show success message with distance
+      if (userLocation) {
+        const dist = getDistanceMeters(userLocation.lat, userLocation.lon, location.lat, location.lon);
+        const remaining = MYSTERY_LOCATIONS.length - foundBoxes.size;
+        
+        if (remaining > 0) {
+          alert(`🎉 Great! You found ${location.id}!\n📍 You were ${dist.toFixed(1)}m away.\n🎯 ${remaining} more boxes to find!`);
+        } else {
+          alert(`🎉 CONGRATULATIONS! You found ALL mystery boxes!\n📍 Final box was ${dist.toFixed(1)}m away.\n🏆 Quest Complete!`);
+        }
+      } else {
+        alert(`🎉 You found ${location.id}!`);
+      }
+      
+      // Update direction hint after finding a box
+      updateDirectionHint();
+    });
+  }
+});
+
+if (testBox) {
+  testBox.addEventListener('click', function () {
+    console.log('📦 Test box clicked!');
+    if (userLocation) {
+      // Find closest mystery box for reference
+      let closestDistance = Infinity;
+      MYSTERY_LOCATIONS.forEach(location => {
+        if (!foundBoxes.has(location.id)) {
+          const dist = getDistanceMeters(userLocation.lat, userLocation.lon, location.lat, location.lon);
+          if (dist < closestDistance) closestDistance = dist;
+        }
+      });
+      
+      alert(`📦 Test box clicked! Camera is working.\n📍 Closest mystery box: ${closestDistance.toFixed(1)}m away\n🎯 You need to be within ${THRESHOLD_METERS}m to find mystery objects.\n📊 Found: ${foundBoxes.size}/${MYSTERY_LOCATIONS.length} boxes`);
+    } else {
+      alert('📦 Test box clicked! Camera is working.\n📍 Getting your location...');
     }
   });
-  console.log('💡 Use hideAllBoxes() to hide them again');
 }
 
-// Debug function to hide all boxes
-function hideAllBoxes() {
-  console.log('🔧 DEBUG: Hiding all mystery boxes');
+// Test mode functions for debugging
+function enableTestMode() {
+  testMode = true;
+  debugMode = true;
+  console.log('🧪 TEST MODE ENABLED - Test box will be visible for AR debugging');
+  
+  if (testBox) {
+    testBox.setAttribute('visible', 'true');
+    console.log('📦 Test box is now visible');
+  }
+  
+  // Hide mystery boxes in test mode
   MYSTERY_LOCATIONS.forEach((location) => {
     const boxElement = document.getElementById(location.id);
     if (boxElement) {
       boxElement.setAttribute('visible', 'false');
-      console.log(`📦 ${location.id} hidden`);
     }
   });
+  
+  console.log('🎮 Mystery boxes hidden in test mode');
+  console.log('💡 Use disableTestMode() to return to game mode');
 }
 
-// Make debug functions available globally
-window.showAllBoxes = showAllBoxes;
-window.hideAllBoxes = hideAllBoxes;
+function disableTestMode() {
+  testMode = false;
+  debugMode = false;
+  console.log('🎮 GAME MODE ENABLED - Test box hidden, mystery boxes will show based on GPS');
+  
+  if (testBox) {
+    testBox.setAttribute('visible', 'false');
+    console.log('📦 Test box is now hidden');
+  }
+  
+  // Re-check distances for mystery boxes
+  if (gpsEnabled) {
+    checkDistance();
+  }
+  
+  console.log('🗺️ Mystery boxes will show when within range');
+  console.log('💡 Use enableTestMode() to test AR functionality');
+}
 
 // Make functions available globally for console access
 window.enableTestMode = enableTestMode;
@@ -562,10 +630,7 @@ window.onload = () => {
   console.log('💡 Debug commands available:');
   console.log('   enableTestMode() - Show yellow test box for AR testing');
   console.log('   disableTestMode() - Hide test box, enable normal game mode');
-  console.log('   showAllBoxes() - Force show all mystery boxes (for testing)');
-  console.log('   hideAllBoxes() - Hide all mystery boxes');
   console.log('🗺️ Normal mode: Mystery boxes appear when within ' + THRESHOLD_METERS + 'm of target locations');
-  console.log('📱 If boxes are "visible" but you can\'t see them, try showAllBoxes() to test AR rendering');
   
   debugCameraAccess();
   initializeAR();
