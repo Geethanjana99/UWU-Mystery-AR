@@ -3,7 +3,7 @@
 // Target coordinates
 const TARGET_LAT = 6.985462148939262;
 const TARGET_LON = 81.0734485580701;
-const THRESHOLD_METERS = 1000; // Increased to 1000 meters for easier testing
+const THRESHOLD_METERS = 25; // Back to 25 meters for real gameplay
 
 const mysteryBox = document.getElementById('mysteryBox');
 const testBox = document.getElementById('testBox');
@@ -12,7 +12,7 @@ const loadingIndicator = document.getElementById('loadingIndicator');
 
 let gpsEnabled = false;
 let userLocation = null;
-let debugMode = true; // Enable debug mode for testing
+let debugMode = false; // Disable debug mode - only show at correct location
 
 // Debug function to check camera access
 function debugCameraAccess() {
@@ -296,31 +296,29 @@ function showFallbackMessage() {
 
 function checkDistance() {
   if (!userLocation || !gpsEnabled) {
-    // In debug mode, show mystery box after delay even without GPS
-    if (debugMode) {
-      console.log('🐛 Debug mode: Showing mystery box regardless of location');
-      setTimeout(() => {
-        if (mysteryBox) {
-          mysteryBox.setAttribute('visible', 'true');
-          mysteryBox.setAttribute('position', '2 0 -5'); // Position it next to test box
-          console.log('🎯 Debug: Mystery box is now visible!');
-        }
-      }, 5000); // Show after 5 seconds
-    }
+    console.log('⏳ Waiting for GPS location...');
     return;
   }
   
   const dist = getDistanceMeters(userLocation.lat, userLocation.lon, TARGET_LAT, TARGET_LON);
+  console.log(`📍 Current location: ${userLocation.lat.toFixed(6)}, ${userLocation.lon.toFixed(6)}`);
+  console.log(`📍 Target location: ${TARGET_LAT}, ${TARGET_LON}`);
   console.log(`📍 Distance to target: ${dist.toFixed(1)}m (threshold: ${THRESHOLD_METERS}m)`);
   
-  if (dist < THRESHOLD_METERS || debugMode) {
+  if (dist < THRESHOLD_METERS) {
     if (mysteryBox) {
       mysteryBox.setAttribute('visible', 'true');
-      console.log('🎯 Mystery box is now visible!');
+      console.log('🎯 You are close enough! Mystery box is now visible!');
+      
+      // Show success message
+      setTimeout(() => {
+        alert(`🎯 Mystery object found! You are ${dist.toFixed(1)}m away from the target location.`);
+      }, 1000);
     }
   } else {
     if (mysteryBox) {
       mysteryBox.setAttribute('visible', 'false');
+      console.log(`❌ Too far away. You need to be within ${THRESHOLD_METERS}m. Current distance: ${dist.toFixed(1)}m`);
     }
   }
 }
@@ -363,7 +361,12 @@ if (mysteryBox) {
 if (testBox) {
   testBox.addEventListener('click', function () {
     console.log('📦 Test box clicked!');
-    alert('📦 Test box clicked! Camera is working. Wait for the red mystery box to appear.');
+    if (userLocation) {
+      const dist = getDistanceMeters(userLocation.lat, userLocation.lon, TARGET_LAT, TARGET_LON);
+      alert(`📦 Test box clicked! Camera is working.\n📍 Current distance to mystery location: ${dist.toFixed(1)}m\n🎯 You need to be within ${THRESHOLD_METERS}m to find the mystery object.`);
+    } else {
+      alert('📦 Test box clicked! Camera is working.\n📍 Getting your location...');
+    }
   });
 }
 
