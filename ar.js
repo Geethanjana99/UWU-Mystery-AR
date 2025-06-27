@@ -309,11 +309,7 @@ function checkDistance() {
     if (mysteryBox) {
       mysteryBox.setAttribute('visible', 'true');
       console.log('🎯 You are close enough! Mystery box is now visible!');
-      
-      // Show success message
-      setTimeout(() => {
-        alert(`🎯 Mystery object found! You are ${dist.toFixed(1)}m away from the target location.`);
-      }, 1000);
+      console.log(`📍 You are ${dist.toFixed(1)}m away from the target location.`);
     }
   } else {
     if (mysteryBox) {
@@ -354,7 +350,14 @@ if (mysteryBox) {
       popup.classList.remove('hidden');
       setTimeout(() => popup.classList.add('hidden'), 3500);
     }
-    alert('🎉 You found the hidden object!');
+    
+    // Show success message with distance
+    if (userLocation) {
+      const dist = getDistanceMeters(userLocation.lat, userLocation.lon, TARGET_LAT, TARGET_LON);
+      alert(`🎉 Congratulations! You found the hidden object!\n📍 You were ${dist.toFixed(1)}m away from the target location.`);
+    } else {
+      alert('🎉 You found the hidden object!');
+    }
   });
 }
 
